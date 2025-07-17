@@ -18,8 +18,12 @@ const SelectedActivityCard: React.FC<SelectedActivityCardProps> = ({
     <div className="flex items-center justify-between bg-[#FFB38A] rounded-[10px] border border-[#9B9DA1] border-[0.5px] px-6 py-4 w-auto max-w-full">
       {/* 왼쪽 텍스트: 따로 스타일 적용 */}
       <div className="flex items-center gap-2 flex-shrink min-w-0">
-        <p className="text-[#00193E] text-[20px] font-semibold leading-snug break-keep">{event}</p>
-        <p className="text-[#00193E] text-[16px] font-normal leading-snug break-keep">{activity}</p>
+        <p className="font-noto text-[#00193E] text-[20px] font-semibold leading-snug break-keep">
+          {event}
+        </p>
+        <p className="font-noto text-[#00193E] text-[16px] font-normal leading-snug break-keep">
+          {activity}
+        </p>
       </div>
 
       {/* X 버튼 */}

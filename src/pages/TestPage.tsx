@@ -1,3 +1,5 @@
+import React, { useState } from 'react';
+
 import SearchBar from '@/shared/components/SearchBar';
 import SortingBar from '@/shared/components/SortingBar';
 import UndoButton from '@/shared/components/UndoButton';
@@ -6,7 +8,11 @@ import ChatInput from '@/features/resume-editor/components/ChatInput';
 import ToggledSelectedActivityCard from '@/features/resume-editor/components/ToggledSelectedActivityCard';
 import AutoSaved, { useDebounceSave } from '@/features/resume-editor/components/AutoSaved';
 import DragContentCard from '@/features/resume-editor/components/DragContentCard';
-import React, { useState } from 'react';
+import GuideLineCard from '@/shared/components/GuideLineCard';
+import QuestionShowCard from '@/shared/components/QuestionShowCard';
+import SelectedActivityCard from '@/shared/components/SelectedActivityCard';
+import ApplicationTitle from '@/shared/components/ApplicationTitle';
+import Header from '@/shared/layout/Header';
 
 const sortOptions = ['시간순', '기여도 높은 순', '시간 역순', 'option을 프롭으로 전달해요'];
 
@@ -49,10 +55,18 @@ export default function TestPage() {
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
-
         <AutoSaved status={status} lastSaved={lastSaved} />
       </div>
       <DragContentCard />
+      <GuideLineCard />
+      <QuestionShowCard question="이 활동을 통해 어떤 경험을 얻었나요?" />
+      <SelectedActivityCard
+        event="서비스기획 동아리"
+        activity="프로젝트 기획 및 실행"
+        onClose={() => console.log('Card closed')}
+      />
+      <ApplicationTitle targetName="서비스기획 동아리" />
+      <Header />
     </div>
   );
 }
