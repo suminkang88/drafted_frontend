@@ -23,11 +23,11 @@ const GuideLineCard: React.FC<GuideLineCardProps> = ({
 }) => {
   return (
     <div className="bg-[#FFFFFF] border border-[#9B9DA1] border-opacity-50 shadow-[0_4px_4px_rgba(0,0,0,0.25)] rounded-lg p-5">
-      <div className="text-[#000000] font-bold text-lg flex items-center mb-3">
+      <div className="text-[#000000] font-noto font-bold text-lg flex items-center mb-3">
         📍 이렇게 작성해보세요
       </div>
       <hr className="border-[#9B9DA1] mb-3" />
-      <p className="text-[#000000] text-base whitespace-pre-line">{text}</p>
+      <p className="font-noto text-[#000000] text-base whitespace-pre-line">{text}</p>
     </div>
   );
 };
