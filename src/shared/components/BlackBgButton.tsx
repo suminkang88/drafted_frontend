@@ -1,19 +1,21 @@
 import React from 'react';
+import { twMerge } from 'tailwind-merge';
 
 interface BlackBgButtonProps {
   onClick?: () => void;
   className?: string;
+  textClassName?: string;
+  innerText?: string;
 }
 
 export const BlackBgButton: React.FC<BlackBgButtonProps> = ({
   onClick = () => {},
   className = '',
+  innerText = '다른 활동 찾아보기',
 }) => {
-  return (
-    <button
-      onClick={onClick}
-      className={`
-        w-[273px] 
+  const mergedClassName = twMerge(
+    `
+    w-[273px] 
         h-[46px] 
         p-[5px] 
         bg-[#00193e] 
@@ -29,9 +31,12 @@ export const BlackBgButton: React.FC<BlackBgButtonProps> = ({
         focus:ring-2 
         focus:ring-blue-300 
         focus:ring-opacity-50
-        ${className}
-      `}
-    >
+        `,
+    className
+  );
+
+  return (
+    <button onClick={onClick} className={mergedClassName}>
       <span
         className="
         text-center 
@@ -41,7 +46,7 @@ export const BlackBgButton: React.FC<BlackBgButtonProps> = ({
         font-noto-sans
       "
       >
-        다른 활동 찾아보기
+        {innerText}
       </span>
     </button>
   );

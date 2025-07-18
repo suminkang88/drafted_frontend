@@ -1,18 +1,19 @@
 import React from 'react';
+import { twMerge } from 'tailwind-merge';
 
 interface GrayBgButtonProps {
   onClick?: () => void;
   className?: string;
+  innerText?: string;
 }
 
 export const GrayBgButton: React.FC<GrayBgButtonProps> = ({
   onClick = () => {},
   className = '',
+  innerText = '보기',
 }) => {
-  return (
-    <button
-      onClick={onClick}
-      className={`
+  const mergedClassName = twMerge(
+    `
           w-[77px] 
           h-7 
           p-[5px] 
@@ -29,10 +30,12 @@ export const GrayBgButton: React.FC<GrayBgButtonProps> = ({
           focus:ring-2 
           focus:ring-blue-300 
           focus:ring-opacity-50
-          ${className}
-        `}
-      aria-label="보기 - View"
-    >
+        `,
+    className
+  );
+
+  return (
+    <button onClick={onClick} className={mergedClassName}>
       <div
         className="
             text-center 
@@ -42,7 +45,7 @@ export const GrayBgButton: React.FC<GrayBgButtonProps> = ({
             font-noto-sans
           "
       >
-        보기
+        {innerText}
       </div>
     </button>
   );
