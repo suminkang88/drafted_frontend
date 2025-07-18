@@ -1,13 +1,14 @@
 import React from 'react';
-// 디버깅용 테스트 페이지 추가
-import ButtonSample from './ButtonSample';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ButtonSample from './ButtonSample';
+import TestPage from '../pages/TestPage';
 
 const AppRouter = () => {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<ButtonSample />} />
+        <Route path="/" element={<TestPage />} />
       </Routes>
     </BrowserRouter>
   );
