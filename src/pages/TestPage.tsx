@@ -1,18 +1,29 @@
 import React, { useState } from 'react';
 
-import SearchBar from '@/shared/components/SearchBar';
-import SortingBar from '@/shared/components/SortingBar';
-import UndoButton from '@/shared/components/UndoButton';
-import ActivityRecordCard from '@/shared/components/ActivityRecordCard';
-import ChatInput from '@/features/resume-editor/components/ChatInput';
-import ToggledSelectedActivityCard from '@/features/resume-editor/components/ToggledSelectedActivityCard';
-import AutoSaved, { useDebounceSave } from '@/features/resume-editor/components/AutoSaved';
-import DragContentCard from '@/features/resume-editor/components/DragContentCard';
-import GuideLineCard from '@/shared/components/GuideLineCard';
-import QuestionShowCard from '@/shared/components/QuestionShowCard';
-import SelectedActivityCard from '@/shared/components/SelectedActivityCard';
-import ApplicationTitle from '@/shared/components/ApplicationTitle';
-import Header from '@/shared/layout/Header';
+import {
+  SearchBar,
+  SortingBar,
+  UndoButton,
+  ActivityRecordCard,
+  SelectedActivityCard,
+  ApplicationTitle,
+  Header,
+  GuideLineCard,
+  QuestionShowCard,
+  BlackBgButton,
+  GrayBgButton,
+  DeleteOrAdd,
+  QuestionSelectButton,
+} from '@/shared/components';
+import {
+  AISuggestionCard,
+  ChatInput,
+  ToggledSelectedActivityCard,
+  AutoSaved,
+  useDebounceSave,
+  DragContentCard,
+  ContentInputBox,
+} from '../features/resume-editor/components';
 
 const sortOptions = ['시간순', '기여도 높은 순', '시간 역순', 'option을 프롭으로 전달해요'];
 
@@ -67,6 +78,16 @@ export default function TestPage() {
       />
       <ApplicationTitle targetName="서비스기획 동아리" />
       <Header />
+
+      <BlackBgButton />
+      <GrayBgButton innerText="안녕" />
+      <DeleteOrAdd />
+      <QuestionSelectButton questionNumbers={3} selectedTab={2} />
+
+      <div className="p-30">
+        <AISuggestionCard AISuggestion="사용자 경험을 고민하며 비즈니스 가치를 만들어가는 서비스 기획의 과정이 흥미롭게 다가왔습니다." />
+        <ContentInputBox />
+      </div>
     </div>
   );
 }

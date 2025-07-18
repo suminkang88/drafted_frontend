@@ -54,7 +54,7 @@ export const QuestionSelectButton: React.FC<QuestionSelectButtonProps> = ({
                   text-center 
                   text-[13px] 
                   font-semibold 
-                  font-noto-sans
+                  font-noto
                   ${isActive ? 'text-white' : 'text-[#00193e]'}
                 `}
                 >

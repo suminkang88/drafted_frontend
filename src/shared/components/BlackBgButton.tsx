@@ -43,7 +43,7 @@ export const BlackBgButton: React.FC<BlackBgButtonProps> = ({
         text-white 
         text-xl 
         font-normal 
-        font-noto-sans
+        font-noto
       "
       >
         {innerText}

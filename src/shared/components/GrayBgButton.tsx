@@ -42,7 +42,7 @@ export const GrayBgButton: React.FC<GrayBgButtonProps> = ({
             text-[#00193e] 
             text-[13px] 
             font-semibold 
-            font-noto-sans
+            font-noto
           "
       >
         {innerText}
