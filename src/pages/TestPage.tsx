@@ -20,10 +20,13 @@ import {
   ChatInput,
   ToggledSelectedActivityCard,
   AutoSaved,
-  useDebounceSave,
+  // useDebounceSave,
   DragContentCard,
   ContentInputBox,
 } from '../features/resume-editor/components';
+import { SideBar, EventRecommendationCard } from '@/features/resume-setup/components';
+
+import { activities } from '@/features/resume-setup/components/dummy';
 
 const sortOptions = ['시간순', '기여도 높은 순', '시간 역순', 'option을 프롭으로 전달해요'];
 
@@ -32,7 +35,7 @@ export default function TestPage() {
   const [selectedSort, setSelectedSort] = useState(sortOptions[0]);
 
   const [text, setText] = useState('');
-  const { status, lastSaved } = useDebounceSave(text, 1000); // 1초 디바운스
+  // const { status, lastSaved } = useDebounceSave(text, 1000); // 1초 디바운스
   return (
     <div style={{ padding: '2rem' }}>
       <SearchBar value={searchValue} onChange={setSearchValue} />
@@ -66,7 +69,7 @@ export default function TestPage() {
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
-        <AutoSaved status={status} lastSaved={lastSaved} />
+        {/* <AutoSaved status={status} lastSaved={lastSaved} /> */}
       </div>
       <DragContentCard />
       <GuideLineCard />
@@ -80,13 +83,17 @@ export default function TestPage() {
       <Header />
 
       <BlackBgButton />
-      <GrayBgButton innerText="안녕" />
+      <GrayBgButton innerText="수정하기" />
       <DeleteOrAdd />
-      <QuestionSelectButton questionNumbers={3} selectedTab={2} />
+      <QuestionSelectButton questionNumbers={3} />
 
       <div className="p-30">
         <AISuggestionCard AISuggestion="사용자 경험을 고민하며 비즈니스 가치를 만들어가는 서비스 기획의 과정이 흥미롭게 다가왔습니다." />
         <ContentInputBox />
+      </div>
+
+      <div className="p-40">
+        <SideBar></SideBar>
       </div>
     </div>
   );
