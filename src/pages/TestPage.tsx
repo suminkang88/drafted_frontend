@@ -23,13 +23,16 @@ import {
   useDebounceSave,
   DragContentCard,
   ContentInputBox,
-} from '../features/resume-editor/components';
+} from '@/features/resume-editor/components';
+import { ActivityAddModal, ActivitySearchModal } from '@/features/resume-setup/components';
 
 const sortOptions = ['시간순', '기여도 높은 순', '시간 역순', 'option을 프롭으로 전달해요'];
 
 export default function TestPage() {
   const [searchValue, setSearchValue] = useState('');
   const [selectedSort, setSelectedSort] = useState(sortOptions[0]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
 
   const [text, setText] = useState('');
   const { status, lastSaved } = useDebounceSave(text, 1000); // 1초 디바운스
@@ -88,6 +91,28 @@ export default function TestPage() {
         <AISuggestionCard AISuggestion="사용자 경험을 고민하며 비즈니스 가치를 만들어가는 서비스 기획의 과정이 흥미롭게 다가왔습니다." />
         <ContentInputBox />
       </div>
+      <>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="px-4 py-2 bg-green-700 text-white rounded-lg"
+        >
+          활동 추가
+        </button>
+
+        {showAddModal && <ActivityAddModal onClose={() => setShowAddModal(false)} />}
+      </>
+      <>
+        <div className="p-10 font-noto">
+          <button
+            onClick={() => setShowSearchModal(true)}
+            className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 transition-colors"
+          >
+            활동 검색하기
+          </button>
+
+          {showSearchModal && <ActivitySearchModal onClose={() => setShowSearchModal(false)} />}
+        </div>
+      </>
     </div>
   );
 }
