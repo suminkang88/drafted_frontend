@@ -20,22 +20,24 @@ import {
   ChatInput,
   ToggledSelectedActivityCard,
   AutoSaved,
-  // useDebounceSave,
+  useDebounceSave,
   DragContentCard,
   ContentInputBox,
 } from '../features/resume-editor/components';
 import { SideBar, EventRecommendationCard } from '@/features/resume-setup/components';
-
 import { activities } from '@/features/resume-setup/components/dummy';
+import { ActivityAddModal, ActivitySearchModal } from '@/features/resume-setup/components';
 
 const sortOptions = ['시간순', '기여도 높은 순', '시간 역순', 'option을 프롭으로 전달해요'];
 
 export default function TestPage() {
   const [searchValue, setSearchValue] = useState('');
   const [selectedSort, setSelectedSort] = useState(sortOptions[0]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
 
   const [text, setText] = useState('');
-  // const { status, lastSaved } = useDebounceSave(text, 1000); // 1초 디바운스
+  const { status, lastSaved } = useDebounceSave(text, 1000); // 1초 디바운스
   return (
     <div style={{ padding: '2rem' }}>
       <SearchBar value={searchValue} onChange={setSearchValue} />
@@ -95,6 +97,30 @@ export default function TestPage() {
       <div className="p-40">
         <SideBar></SideBar>
       </div>
+
+      <>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="px-4 py-2 bg-green-700 text-white rounded-lg"
+        >
+          활동 추가
+        </button>
+
+        {showAddModal && <ActivityAddModal onClose={() => setShowAddModal(false)} />}
+      </>
+      <>
+        <div className="p-10 font-noto">
+          <button
+            onClick={() => setShowSearchModal(true)}
+            className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 transition-colors"
+          >
+            활동 검색하기
+          </button>
+
+          {showSearchModal && <ActivitySearchModal onClose={() => setShowSearchModal(false)} />}
+        </div>
+      </>
+
     </div>
   );
 }
