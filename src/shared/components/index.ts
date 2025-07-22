@@ -1,7 +1,7 @@
-export { BlackBgButton } from './BlackBgButton';
-export { GrayBgButton } from './GrayBgButton';
-export { QuestionSelectButton } from './QuestionSelectButton';
-export { DeleteOrAdd } from './DeleteOrAdd';
+export { default as BlackBgButton } from './BlackBgButton';
+export { default as GrayBgButton } from './GrayBgButton';
+export { default as QuestionSelectButton } from './QuestionSelectButton';
+export { default as DeleteOrAdd } from './DeleteOrAdd';
 export { default as SearchBar } from './SearchBar';
 export { default as SortingBar } from './SortingBar';
 export { default as UndoButton } from './UndoButton';

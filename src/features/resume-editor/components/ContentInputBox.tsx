@@ -73,7 +73,8 @@ export const ContentInputBox: React.FC<ContentInputBoxProps> = ({}) => {
 
       <BlackBgButton
         onClick={onCopyClick}
-        className="font-noto w-[101px] flex-1 text-white text-[0.65rem] relative mt-[-1.00px] font-semibold text-center tracking-[0] leading-[normal]"
+        className="font-noto w-auto h-auto flex-1 relative mt-[-1.00px] font-semibold text-center tracking-[0] leading-[normal]"
+        textClassName="text-[13px]"
         innerText="클립보드 복사"
       />
     </div>
