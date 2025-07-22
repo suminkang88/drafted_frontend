@@ -24,9 +24,16 @@ import {
   DragContentCard,
   ContentInputBox,
 } from '../features/resume-editor/components';
-import { SideBar, EventRecommendationCard } from '@/features/resume-setup/components';
 import { activities } from '@/features/resume-setup/components/dummy';
-import { ActivityAddModal, ActivitySearchModal } from '@/features/resume-setup/components';
+import {
+  SideBar,
+  EventRecommendationCard,
+  BasicInfoInputCard,
+  QuestionInputCard,
+  StepText,
+  ActivityAddModal,
+  ActivitySearchModal,
+} from '@/features/resume-setup/components';
 
 const sortOptions = ['시간순', '기여도 높은 순', '시간 역순', 'option을 프롭으로 전달해요'];
 
@@ -120,7 +127,27 @@ export default function TestPage() {
           {showSearchModal && <ActivitySearchModal onClose={() => setShowSearchModal(false)} />}
         </div>
       </>
+      <div className="p-10 space-y-10">
+        {/* 단계 안내 텍스트 */}
+        <StepText step={1} description="지원서 작성을 위해 기본 정보를 입력해주세요" />
 
+        {/* 기본 정보 입력 카드 */}
+        <section className="border p-5 rounded shadow">
+          <h2 className="text-xl font-semibold mb-4">📝 BasicInfoInputCard 테스트</h2>
+          <BasicInfoInputCard />
+        </section>
+
+        {/* 문항 입력 카드 */}
+        <section className="border p-5 rounded shadow">
+          <h2 className="text-xl font-semibold mb-4">📄 QuestionInputCard 테스트</h2>
+          <QuestionInputCard
+            index={0}
+            onLengthChange={function (index: number, value: number): void {
+              throw new Error('Function not implemented.');
+            }}
+          />
+        </section>
+      </div>
     </div>
   );
 }
