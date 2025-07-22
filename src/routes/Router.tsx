@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import TestPage from '../pages/TestPage';
 import SetupTestPage from '@/pages/SetupTestPage';
+import TestPage from '@/pages/TestPage';
 
 const AppRouter = () => {
   return (
