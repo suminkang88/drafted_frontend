@@ -6,6 +6,7 @@ import BasicInfoInputPage from '@/pages/BasicInfoInputPage';
 import QuestionInputPage from '@/pages/QuestionInputPage';
 import MainPage from '@/pages/MainPage';
 import Header from '@/shared/layout/Header';
+import ResumeEditPage from '@/features/resume-editor/ResumeEditPage';
 
 import {
   useSession,
@@ -23,16 +24,10 @@ const AppRouter = () => {
       <Header />
       <Routes>
         {/* 비로그인 상태에서 보여줄 경로 */}
-        <Route
-          path="/"
-          element={
-            <SignedOut>
-              <MainPage />
-            </SignedOut>
-          }
-        />
+        <Route path="/" element={<SignedOut>{/*<MainPage />*/}</SignedOut>} />
 
         {/* 로그인 상태에서 보여줄 경로들 */}
+        <Route path="/testpage" element={<TestPage />} />
         <Route
           path="/resume/setup"
           element={
@@ -46,6 +41,14 @@ const AppRouter = () => {
           element={
             <SignedIn>
               <QuestionInputPage />
+            </SignedIn>
+          }
+        />
+        <Route
+          path="/resume/editor"
+          element={
+            <SignedIn>
+              <ResumeEditPage />
             </SignedIn>
           }
         />

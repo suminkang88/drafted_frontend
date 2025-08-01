@@ -38,6 +38,26 @@ import {
 
 const sortOptions = ['시간순', '기여도 높은 순', '시간 역순', 'option을 프롭으로 전달해요'];
 
+//ToggledSelectedActivityCard 컴포넌트 테스트용 더미데이터
+interface ActivityDetailSection {
+  title: string;
+  content: string;
+}
+const dummySections: ActivityDetailSection[] = [
+  {
+    title: '활동 요약',
+    content: '연말부터 8주간 서비스기획 직무 관련 국비지원 프로그램 수료...',
+  },
+  {
+    title: '나의 활동 및 개선',
+    content: '‘지그재그’ 커머스 플랫폼의 커뮤니티 기능을 개선하는 파일럿 프로젝트...',
+  },
+  {
+    title: '결과 및 성과',
+    content: '긍정적인 피드백, PM 직무에 대한 이해도 제고...',
+  },
+];
+
 export default function TestPage() {
   const [searchValue, setSearchValue] = useState('');
   const [selectedSort, setSelectedSort] = useState(sortOptions[0]);
@@ -62,22 +82,10 @@ export default function TestPage() {
         }}
       />
       <ToggledSelectedActivityCard
-        header={<span>서비스기획(PM) 온라인 교육 수강</span>}
-        sections={[
-          {
-            title: '활동 요약',
-            content: '연말부터 8주간 서비스기획 직무 관련 국비지원 프로그램 수료...',
-          },
-          {
-            title: '나의 활동 및 개선',
-            content: '‘지그재그’ 커머스 플랫폼의 커뮤니티 기능을 개선하는 파일럿 프로젝트...',
-          },
-          {
-            title: '결과 및 성과',
-            content: '긍정적인 피드백, PM 직무에 대한 이해도 제고...',
-          },
-        ]}
-      />
+        event="서비스기획 동아리"
+        activity="프로젝트 기획 및 실행"
+        sections={dummySections}
+      ></ToggledSelectedActivityCard>
       <div className="w-[700px] mt-10 p-4 border rounded">
         <h1 className="text-lg font-semibold mb-2">글 작성</h1>
 
@@ -95,6 +103,11 @@ export default function TestPage() {
       <SelectedActivityCard
         event="서비스기획 동아리"
         activity="프로젝트 기획 및 실행"
+        onClose={() => console.log('Card closed')}
+      />
+      <SelectedActivityCard
+        event="무선택"
+        activity="무선택"
         onClose={() => console.log('Card closed')}
       />
       <ApplicationTitle targetName="서비스기획 동아리" />
