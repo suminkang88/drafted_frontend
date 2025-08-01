@@ -1,5 +1,6 @@
 import React from 'react';
 import Header from '@/shared/layout/Header';
+import { useAuth } from '@clerk/clerk-react';
 
 const MainPage = () => {
   return (

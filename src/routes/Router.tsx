@@ -7,20 +7,50 @@ import QuestionInputPage from '@/pages/QuestionInputPage';
 import MainPage from '@/pages/MainPage';
 import Header from '@/shared/layout/Header';
 
+import {
+  useSession,
+  useUser,
+  SignedIn,
+  SignIn,
+  SignedOut,
+  SignInButton,
+  UserButton,
+} from '@clerk/clerk-react';
+
 const AppRouter = () => {
   return (
-    <BrowserRouter>
+    <>
       <Header />
       <Routes>
-        <Route path="/" element={<TestPage />} />
-        <Route path="/main" element={<MainPage />} />
-        {/*<Route path="/test" element={<SetupTestPage />} />*/}
-        {/* STEP 1 - 기본 지원 정보 입력 */}
-        <Route path="/resume/setup" element={<BasicInfoInputPage />} />
-        {/* STEP 2 - 문항 입력 */}
-        <Route path="/resume/question" element={<QuestionInputPage />} />
+        {/* 비로그인 상태에서 보여줄 경로 */}
+        <Route
+          path="/"
+          element={
+            <SignedOut>
+              <MainPage />
+            </SignedOut>
+          }
+        />
+
+        {/* 로그인 상태에서 보여줄 경로들 */}
+        <Route
+          path="/resume/setup"
+          element={
+            <SignedIn>
+              <BasicInfoInputPage />
+            </SignedIn>
+          }
+        />
+        <Route
+          path="/resume/question"
+          element={
+            <SignedIn>
+              <QuestionInputPage />
+            </SignedIn>
+          }
+        />
       </Routes>
-    </BrowserRouter>
+    </>
   );
 };
 

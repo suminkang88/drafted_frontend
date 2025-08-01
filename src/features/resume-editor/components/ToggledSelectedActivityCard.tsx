@@ -17,7 +17,7 @@ const ToggledSelectedActivityCard: React.FC<ToggledSelectedActivityCardProps> = 
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="w-[756px] rounded-xl border font-noto border-gray-200">
+    <div className="w-full rounded-xl border font-noto border-gray-200">
       {/* Header Section */}
       <div className="flex h-[49px] justify-between items-center bg-orange-500 text-white px-4 py-2 rounded-xl">
         <div className="flex-grow">{header}</div>

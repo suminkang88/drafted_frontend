@@ -1,5 +1,15 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import {
+  useSession,
+  useUser,
+  SignedIn,
+  SignIn,
+  SignedOut,
+  SignInButton,
+  UserButton,
+} from '@clerk/clerk-react';
+//import { createClient } from '@supabase/supabase-js';
 
 // ✅ Clerk 연동 전까지 임시 분기용 상태
 const isLoggedIn = false; // → Clerk 연동 시 SignedIn/SignedOut 컴포넌트로 대체 예정
@@ -15,7 +25,14 @@ const Header = () => {
       </Link>
 
       <nav className="flex items-center space-x-8 text-[#00193E]">
-        {isLoggedIn ? (
+        {/* ✅ 로그인되지 않은 경우: 로그인/회원가입만 노출 */}
+        <SignedOut>
+          <SignInButton mode="redirect">
+            <button className="text-[#00193E] font-noto font-medium hover:underline">로그인</button>
+          </SignInButton>
+        </SignedOut>
+
+        <SignedIn>
           <>
             {/* ✅ 로그인된 경우: 전체 메뉴 노출 */}
             <Link
@@ -39,37 +56,9 @@ const Header = () => {
               내 지원서 관리
             </Link>
 
-            <button
-              className="bg-[#F1F5F9] font-noto text-[#00193E] font-medium px-4 py-1 rounded-md 
-              hover:bg-[#00193E] hover:text-white transition-colors"
-            >
-              로그아웃
-            </button>
-
-            <Link to="/mypage">
-              <img
-                src={isHovered ? '/icons/Vector_navy.svg' : '/icons/Vector_gray.svg'}
-                alt="마이페이지"
-                className="w-6 h-6"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-              />
-            </Link>
+            <UserButton afterSignOutUrl="/" />
           </>
-        ) : (
-          <>
-            {/* ✅ 로그인되지 않은 경우: 로그인/회원가입만 노출 */}
-            <Link to="/login" className="text-[#00193E] font-noto font-medium hover:underline">
-              로그인
-            </Link>
-            <Link
-              to="/signup"
-              className="bg-[#00193E] text-white font-noto px-4 py-1 rounded-md hover:bg-opacity-90 transition-colors"
-            >
-              회원가입
-            </Link>
-          </>
-        )}
+        </SignedIn>
       </nav>
     </header>
   );

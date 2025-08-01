@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+// If you are using React 17+, you may need to import the JSX runtime:
 
 import {
   SearchBar,
@@ -51,7 +52,15 @@ export default function TestPage() {
       <SortingBar selected={selectedSort} onSelect={setSelectedSort} options={sortOptions} />
       <UndoButton onClick={() => console.log('Undo clicked')} bgColorClass="bg-gray-200" />
       <ActivityRecordCard />
-      <ChatInput />
+      <ChatInput
+        text={''}
+        setText={function (text: string): void {
+          throw new Error('Function not implemented.');
+        }}
+        onSubmit={function (text: string): void {
+          throw new Error('Function not implemented.');
+        }}
+      />
       <ToggledSelectedActivityCard
         header={<span>서비스기획(PM) 온라인 교육 수강</span>}
         sections={[
@@ -98,7 +107,12 @@ export default function TestPage() {
 
       <div className="p-30">
         <AISuggestionCard AISuggestion="사용자 경험을 고민하며 비즈니스 가치를 만들어가는 서비스 기획의 과정이 흥미롭게 다가왔습니다." />
-        <ContentInputBox />
+        <ContentInputBox
+          text={''}
+          setText={function (text: string): void {
+            throw new Error('Function not implemented.');
+          }}
+        />
       </div>
 
       <div className="p-40">
