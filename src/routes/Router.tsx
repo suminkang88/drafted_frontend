@@ -7,53 +7,54 @@ import QuestionInputPage from '@/pages/QuestionInputPage';
 import MainPage from '@/pages/MainPage';
 import Header from '@/shared/layout/Header';
 import ResumeEditPage from '@/features/resume-editor/ResumeEditPage';
-
-import {
-  useSession,
-  useUser,
-  SignedIn,
-  SignIn,
-  SignedOut,
-  SignInButton,
-  UserButton,
-} from '@clerk/clerk-react';
+import ArchiveMainPage from '@/pages/ArchiveMainPage';
+import ArchiveDetailPage from '@/pages/ArchiveDetailPage';
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
 
 const AppRouter = () => {
   return (
-    <>
+    // ✅ 전체 배경색 감싸기
+    <div className="min-h-screen bg-[#F8F9FA]">
+      {/* 공통 헤더 */}
       <Header />
-      <Routes>
-        {/* 비로그인 상태에서 보여줄 경로 */}
-        <Route path="/" element={<SignedOut>{/*<MainPage />*/}</SignedOut>} />
 
-        {/* 로그인 상태에서 보여줄 경로들 */}
-        <Route path="/testpage" element={<TestPage />} />
-        <Route
-          path="/resume/setup"
-          element={
-            <SignedIn>
-              <BasicInfoInputPage />
-            </SignedIn>
-          }
-        />
-        <Route
-          path="/resume/question"
-          element={
-            <SignedIn>
-              <QuestionInputPage />
-            </SignedIn>
-          }
-        />
-        <Route
-          path="/resume/editor"
-          element={
-            <SignedIn>
-              <ResumeEditPage />
-            </SignedIn>
-          }
-        />
-      </Routes>
-    </>
+      {/* 페이지 내용 */}
+      <main className="px-6 py-8">
+        <Routes>
+          {/* 비로그인 상태에서 보여줄 경로 */}
+          <Route path="/" element={<SignedOut>{/*<MainPage />*/}</SignedOut>} />
+
+          {/* 로그인 상태에서 보여줄 경로들 */}
+          <Route path="/testpage" element={<TestPage />} />
+          <Route
+            path="/resume/setup"
+            element={
+              <SignedIn>
+                <BasicInfoInputPage />
+              </SignedIn>
+            }
+          />
+          <Route
+            path="/resume/question"
+            element={
+              <SignedIn>
+                <QuestionInputPage />
+              </SignedIn>
+            }
+          />
+          <Route
+            path="/resume/editor"
+            element={
+              <SignedIn>
+                <ResumeEditPage />
+              </SignedIn>
+            }
+          />
+          <Route path="/archive" element={<ArchiveMainPage />} />
+          <Route path="/archivedetail" element={<ArchiveDetailPage />} />
+        </Routes>
+      </main>
+    </div>
   );
 };
 
