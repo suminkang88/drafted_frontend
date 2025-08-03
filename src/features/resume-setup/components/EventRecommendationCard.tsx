@@ -88,6 +88,13 @@ const EventRecommendationCard: React.FC<EventRecommendationCardProps> = ({
             />
           )}
         </div>
+
+        {/* ⬇ 선택되었을 경우 하단 메시지 표시 */}
+        {activity.isSelected && (
+          <p className="absolute bottom-4 left-5 text-sm text-[#9b9da0] font-noto">
+            이미 선택된 활동입니다
+          </p>
+        )}
       </div>
     </>
   );

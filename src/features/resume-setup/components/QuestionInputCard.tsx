@@ -51,7 +51,7 @@ const QuestionInputCard: React.FC<QuestionInputProps> = ({ index, onLengthChange
     );
 
   return (
-    <div className="bg-[#F9FBFC] p-6 rounded-md shadow-md">
+    <div>
       {/* 문항 제목 */}
       <p className="text-[#00193E] text-[20px] font-semibold mb-2">문항 {index + 1}</p>
 

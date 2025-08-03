@@ -1,18 +1,33 @@
 import React, { useState } from 'react';
 import { BlackBgButton } from '@/shared/components';
+//import { AutoSaved, useDebounceSave } from '@/features/resume-editor/components';
 
-interface ContentInputBoxProps {}
+type ContentInputBoxProps = {
+  // other props
+  text: string;
+  setText: (text: string) => void;
+  onTextDrag?: (text: string) => void;
+};
 
-export const ContentInputBox: React.FC<ContentInputBoxProps> = ({}) => {
+export const ContentInputBox: React.FC<ContentInputBoxProps> = ({ text, setText, onTextDrag }) => {
   function onQuestionClick(): void {}
   function onCopyClick(): void {}
 
-  const [text, setText] = useState('');
+  const handleMouseUp = () => {
+    const selection = window.getSelection();
+    const selected = selection?.toString();
+    if (onTextDrag) {
+      onTextDrag(selected || '');
+    }
+  }; //이게뭐지?
+
   const [focused, setFocused] = useState(false);
 
+  //const { status, lastSaved } = useDebounceSave(text, 1000); // 1초 후 자동 저장
+
   return (
-    <div className="flex flex-wrap w-[756px] items-end gap-[13px_349px] relative">
-      <div className="relative w-[756px] h-[379px]">
+    <div className="flex flex-wrap items-end gap-[13px_349px] relative">
+      <div className="relative w-full h-[379px]">
         <div className="relative h-[379px] rounded-[10px]">
           <div className="absolute inset-0 bg-white rounded-[10px] border-[0.5px] border-solid border-[#9b9da0]" />
 
@@ -43,6 +58,7 @@ export const ContentInputBox: React.FC<ContentInputBoxProps> = ({}) => {
         "
             value={text}
             onChange={(e) => setText(e.target.value)}
+            onMouseUp={handleMouseUp}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
           />
@@ -71,12 +87,14 @@ export const ContentInputBox: React.FC<ContentInputBoxProps> = ({}) => {
         </button>
       </div>
 
-      <BlackBgButton
-        onClick={onCopyClick}
-        className="font-noto w-auto h-auto flex-1 relative mt-[-1.00px] font-semibold text-center tracking-[0] leading-[normal]"
-        textClassName="text-[13px]"
-        innerText="클립보드 복사"
-      />
+      <div className="absolute bottom-0 right-0">
+        <BlackBgButton
+          onClick={onCopyClick}
+          className="w-[130px] font-noto h-auto relative mt-[-1.00px] font-semibold text-center tracking-[0] leading-[normal]"
+          textClassName="text-[14px]"
+          innerText="클립보드 복사"
+        />
+      </div>
     </div>
   );
 };

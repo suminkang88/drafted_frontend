@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 interface RecordField {
   label: string;
@@ -29,92 +29,86 @@ const defaultFields: RecordField[] = [
   },
 ];
 
-const ActionBar = ({ onAdd, onEdit, onDelete, onHelp }: any) => {
+const FileUploader = () => {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files);
+      const filtered = selectedFiles.filter((file) => file.name.match(/\.(pdf|doc|docx)$/i));
+      setUploadedFiles((prev) => [...prev, ...filtered]);
+    }
+  };
+
+  const handleRemove = (indexToRemove: number) => {
+    setUploadedFiles((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
+  const handleView = (file: File) => {
+    const fileURL = URL.createObjectURL(file);
+    window.open(fileURL, '_blank');
+  };
+
   return (
-    <div className="flex justify-end space-x-3 mb-4">
-      <button onClick={onAdd}>
-        <img src="/icons/plus.svg" alt="add" className="size-[25px]" />
-      </button>
-      <button onClick={onEdit}>
-        <img src="/icons/edit.svg" alt="edit" className="size-[25px]" />
-      </button>
-      <button onClick={onDelete}>
-        <img src="/icons/trash.svg" alt="delete" className="size-[25px]" />
-      </button>
-      <button onClick={onHelp}>
-        <img src="/icons/help.svg" alt="help" className="size-[25px]" />
-      </button>
+    <div className="mt-6 px-2">
+      {/* 업로드 아이콘 */}
+      <div className="flex items-center space-x-2 mb-2">
+        <img
+          src="/icons/fileadd.png"
+          alt="Upload"
+          width={30}
+          height={30}
+          className="cursor-pointer"
+          onClick={() => inputRef.current?.click()}
+        />
+        <span className="block font-noto font-semibold text-[18px] text-gray-700">
+          파일 추가 (PDF, Word)
+        </span>
+      </div>
+
+      {/* 숨겨진 input */}
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".pdf,.doc,.docx"
+        multiple
+        className="hidden"
+        onChange={handleChange}
+      />
+
+      {/* 업로드된 파일 리스트 */}
+      <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-gray-700">
+        {uploadedFiles.map((file, index) => (
+          <li key={index} className="flex items-center justify-between rounded-md">
+            <button onClick={() => handleView(file)} title="View">
+              <img src="/icons/view.svg" alt="View" width={40} height={40} />
+            </button>
+            <div className="flex-1 ml-2 mr-4">
+              <span className="truncate max-w-[60%]">{file.name}</span>
+            </div>
+            <button onClick={() => handleRemove(index)} title="Delete">
+              <img src="/icons/delete.svg" alt="Delete" width={20} height={20} />
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
 
 const ActivityRecordCard: React.FC = () => {
-  const [fields, setFields] = useState(defaultFields);
-  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
-
-  const toggleSelect = (key: string) => {
-    setSelectedKeys((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(key)) newSet.delete(key);
-      else newSet.add(key);
-      return newSet;
-    });
-  };
-
-  const handleAdd = () => {
-    const newKey = `new-${Date.now()}`;
-    setFields((prev) => [
-      ...prev,
-      {
-        label: `새 항목`,
-        placeholder: '새 항목 내용을 입력하세요.',
-        key: newKey,
-      },
-    ]);
-  };
-
-  const handleEdit = () => {
-    if (selectedKeys.size === 1) {
-      const editKey = Array.from(selectedKeys)[0];
-      setFields((prev) =>
-        prev.map((f) => (f.key === editKey ? { ...f, label: f.label + ' (수정됨)' } : f))
-      );
-    }
-  };
-
-  const handleDelete = () => {
-    setFields((prev) => prev.filter((f) => !selectedKeys.has(f.key)));
-    setSelectedKeys(new Set());
-  };
-
-  const handleHelp = () => {
-    alert('도움말');
-  };
+  const fields = defaultFields;
 
   return (
     <div className=" w-[918px] bg-[#E4E8EE] border-gray-300 rounded-xl p-4 ">
-      <ActionBar
-        onAdd={handleAdd}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onHelp={handleHelp}
-      />
       {fields.map((field) => (
         <div className="pl-3" key={field.key}>
-          <div
-            key={field.key}
-            className="  w-[858px] h-[50px] bg-[#F8F9FA] border-gray-200 rounded-md px-3 py-3"
-          >
+          <div key={field.key} className="  w-[858px] h-[50px] rounded-md px-3 py-3">
             <div className="flex items-start justify-between">
               <label className="block font-noto font-semibold text-[18px] text-gray-700">
                 {field.label}
               </label>
-              <input
-                type="checkbox"
-                className="size-[25px] ml-3 mt-1"
-                checked={selectedKeys.has(field.key)}
-                onChange={() => toggleSelect(field.key)}
-              />
             </div>
           </div>
           <textarea
@@ -124,6 +118,7 @@ const ActivityRecordCard: React.FC = () => {
           />
         </div>
       ))}
+      <FileUploader />
     </div>
   );
 };
