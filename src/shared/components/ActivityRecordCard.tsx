@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { Event } from '@/app/types';
 
 interface RecordField {
   label: string;
@@ -97,28 +98,44 @@ const FileUploader = () => {
   );
 };
 
-const ActivityRecordCard: React.FC = () => {
+interface ActivityRecordCardProps {
+  event?: Event;
+  isEmpty?: boolean;
+}
+
+const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({ event, isEmpty }) => {
+  // if (isEmpty) {
+  // const fields = defaultFields;
+  // } else {
+  //   const fields =
+  // }
+
   const fields = defaultFields;
 
   return (
-    <div className=" w-[918px] bg-[#E4E8EE] border-gray-300 rounded-xl p-4 ">
-      {fields.map((field) => (
-        <div className="pl-3" key={field.key}>
-          <div key={field.key} className="  w-[858px] h-[50px] rounded-md px-3 py-3">
-            <div className="flex items-start justify-between">
-              <label className="block font-noto font-semibold text-[18px] text-gray-700">
-                {field.label}
-              </label>
+    <div className="flex flex-col gap-6">
+      <h2 className="text-[20pt] font-bold text-[#00193E]">
+        {isEmpty ? '이벤트 제목' : event?.title}
+      </h2>
+      <div className=" w-[918px] bg-[#E4E8EE] border-gray-300 rounded-xl p-4 ">
+        {fields.map((field) => (
+          <div className="pl-3" key={field.key}>
+            <div key={field.key} className="  w-[858px] h-[50px] rounded-md px-3 py-3">
+              <div className="flex items-start justify-between">
+                <label className="block font-noto font-semibold text-[18px] text-gray-700">
+                  {field.label}
+                </label>
+              </div>
             </div>
+            <textarea
+              placeholder={field.placeholder}
+              className="w-[858px] h-[99px] border rounded-md p-2 text-lg focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+              rows={2}
+            />
           </div>
-          <textarea
-            placeholder={field.placeholder}
-            className="w-[858px] h-[99px] border rounded-md p-2 text-lg focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
-            rows={2}
-          />
-        </div>
-      ))}
-      <FileUploader />
+        ))}
+        <FileUploader />
+      </div>
     </div>
   );
 };

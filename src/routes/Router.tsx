@@ -7,8 +7,8 @@ import QuestionInputPage from '@/pages/QuestionInputPage';
 import MainPage from '@/pages/MainPage';
 import Header from '@/shared/layout/Header';
 import ResumeEditPage from '@/features/resume-editor/ResumeEditPage';
-import ArchiveMainPage from '@/pages/ArchiveMainPage';
-import ArchiveDetailPage from '@/pages/ArchiveDetailPage';
+import ArchiveMainPage from '@/features/archive/ArchiveMainPage';
+import ArchiveDetailPage from '@/features/archive/ArchiveDetailPage';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
 
 const AppRouter = () => {
@@ -51,7 +51,7 @@ const AppRouter = () => {
             }
           />
           <Route path="/archive" element={<ArchiveMainPage />} />
-          <Route path="/archivedetail" element={<ArchiveDetailPage />} />
+          <Route path="/archive/:id" element={<ArchiveDetailPage />} />
         </Routes>
       </main>
     </div>

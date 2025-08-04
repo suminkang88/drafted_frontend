@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import ProfileCard from '@/features/archive/components/ProfileCard';
-import SideBar from '@/features/archive/components/SideBar';
+import { useNavigate } from 'react-router-dom';
+import { ProfileCard, SideBar, ActivityShowCard } from '@/features/archive/components';
 import DeleteOrAdd from '@/shared/components/DeleteOrAdd';
 import SortingBar from '@/shared/components/SortingBar';
-import ActivityShowCard from '@/features/archive/components/ActivityShowCard';
+import { mockActivities as dummyData } from './dummy';
 
 const mockUser = {
   name: '조은성',
@@ -14,57 +14,28 @@ const mockUser = {
 };
 
 // 공통 활동 리스트 (카드 + 사이드바 둘 다 이 리스트에서 필드 분기)
-const mockActivities = [
-  {
-    id: '1',
-    title: '서울대학교 소비자학과 심포지엄',
-    type: '교내 동아리',
-    period: '2022.02.12 ~ 2024.05.31.',
-    highlights: [
-      '사설 프로세스 개선 어쩌고 저쩌고 이름이 카드를 넘치게 되면',
-      'SNS 리브랜딩',
-      '편집 시스템 개선',
-    ],
-    eventCount: 10,
-    isFavorite: true,
-  },
-  {
-    id: '2',
-    title: '대학신문 편집장',
-    type: '교내 동아리',
-    period: '2022.02.12 ~ 2024.05.31.',
-    highlights: ['기획 회의 리드', 'SNS 전략 수립'],
-    eventCount: 8,
-    isFavorite: false,
-  },
-  {
-    id: '3',
-    title: '대학신문 편집장 (2)',
-    type: '교내 동아리',
-    period: '2022.02.12 ~ 2024.05.31.',
-    highlights: ['기획 회의 리드', 'SNS 전략 수립'],
-    eventCount: 9,
-    isFavorite: false,
-  },
-  {
-    id: '4',
-    title: '대학신문 편집장 (3)',
-    type: '교내 동아리',
-    period: '2022.02.12 ~ 2024.05.31.',
-    highlights: ['기획 회의 리드', 'SNS 전략 수립'],
-    eventCount: 9,
-    isFavorite: false,
-  },
-];
-
+const data = dummyData;
 const ArchiveMainPage: React.FC = () => {
   const [sortOption, setSortOption] = useState('진행 중');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [activities, setActivities] = useState(data);
+
+  const handleSelect = (id: string) => {
+    setSelectedId((prev) => (prev === id ? null : id));
+  };
+
+  const handleDelete = () => {
+    // api 연결 시 수정
+    if (selectedId) {
+      setActivities((prev) => prev.filter((a) => a.id !== selectedId));
+    }
+  };
 
   // SideBar에서 사용할 최소 필드만 변환
-  const recentActivityList = mockActivities.slice(0, 3).map((activity) => ({
+  const recentActivityList = data.slice(0, 3).map((activity) => ({
     id: activity.id,
     title: activity.title,
-    path: `/activity/${activity.id}`,
+    path: `/archive/${activity.id}`, // url "activity" > "archive" 로 수정
   }));
 
   return (
@@ -73,7 +44,7 @@ const ArchiveMainPage: React.FC = () => {
         {/* 왼쪽 영역 */}
         <div className="flex flex-col gap-y-10 min-w-[300px] max-w-[350px]">
           <ProfileCard user={mockUser} />
-          <SideBar title="최근 접속한 활동" activities={recentActivityList} />
+          <SideBar title="최근 접속한 활동" events={recentActivityList} />
         </div>
 
         {/* 오른쪽 활동 영역 */}
@@ -84,7 +55,7 @@ const ArchiveMainPage: React.FC = () => {
 
             {/* 버튼과 필터 묶음 */}
             <div className="flex flex-col items-end gap-2">
-              <DeleteOrAdd />
+              <DeleteOrAdd onDeleteClick={handleDelete} />
               <SortingBar
                 selected={sortOption}
                 onSelect={(val) => setSortOption(val)}
@@ -95,8 +66,13 @@ const ArchiveMainPage: React.FC = () => {
 
           {/* 활동 카드 영역 */}
           <div className="flex flex-wrap gap-2.5">
-            {mockActivities.map((activity) => (
-              <ActivityShowCard key={activity.id} {...activity} />
+            {activities.map((activity) => (
+              <ActivityShowCard
+                key={activity.id}
+                {...activity}
+                isSelected={selectedId === activity.id}
+                onSelect={handleSelect}
+              />
             ))}
           </div>
         </div>
