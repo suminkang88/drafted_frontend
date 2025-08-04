@@ -61,7 +61,7 @@ const ArchiveDetailPage: React.FC = () => {
   const [events, setEvents] = useState(activity.events);
   const [keywords, setKeywords] = useState<string[]>([]);
 
-  const handleAddCard = () => setEvents((prev) => [...prev, prev.length]);
+  //const handleAddCard = () => setEvents((prev) => [...prev, prev.length]);
   const handleDeleteCard = () => setEvents((prev) => prev?.slice(0, -1));
 
   const handleAddKeyword = (kw: string) => setKeywords((prev) => [...prev, kw]);
@@ -114,7 +114,7 @@ const ArchiveDetailPage: React.FC = () => {
         {/* 카드 및 삭제/추가 버튼 */}
         <div className="flex flex-col gap-6">
           <div className="flex justify-end items-center">
-            <DeleteOrAdd onAddClick={handleAddCard} onDeleteClick={handleDeleteCard} />
+            {/* <DeleteOrAdd onAddClick={handleAddCard} onDeleteClick={handleDeleteCard} /> */}
           </div>
 
           <div className="flex flex-col gap-16">
