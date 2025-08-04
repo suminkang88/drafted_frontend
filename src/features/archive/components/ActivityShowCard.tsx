@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import GrayBgButton from '@/shared/components/GrayBgButton';
+import { Event } from '@/app/types';
 
 interface ActivityShowCardProps {
   id: string;
   title: string;
   type: string;
   period: string;
+  events?: Event[];
   highlights: string[];
   eventCount: number;
   isFavorite?: boolean;
+  isSelected: boolean;
+  onSelect: (id: string) => void;
 }
 
 const ActivityShowCard: React.FC<ActivityShowCardProps> = ({
@@ -16,10 +21,14 @@ const ActivityShowCard: React.FC<ActivityShowCardProps> = ({
   title,
   type,
   period,
+  events = [],
   highlights = [],
   eventCount,
   isFavorite = false,
+  isSelected = false,
+  onSelect,
 }) => {
+  const navigate = useNavigate();
   const [favorite, setFavorite] = useState(isFavorite);
 
   const handleToggleFavorite = () => {
@@ -27,7 +36,11 @@ const ActivityShowCard: React.FC<ActivityShowCardProps> = ({
   };
 
   return (
-    <div className="w-[280px] h-[300px] p-5 bg-white rounded-[15px] shadow-md border border-[#C6CBD1] relative flex flex-col justify-between">
+    <div
+      onClick={() => onSelect(id)}
+      className={`w-[280px] h-[300px] p-5 bg-white rounded-[15px] shadow-md border  relative flex flex-col justify-between
+      ${isSelected ? 'border-black' : 'border-[#C6CBD1]'}`}
+    >
       {/* 즐겨찾기 아이콘 */}
       <img
         src={favorite ? '/icons/star_filled.svg' : '/icons/star_empty.svg'}
@@ -48,9 +61,9 @@ const ActivityShowCard: React.FC<ActivityShowCardProps> = ({
 
         {/* 하이라이트: 최대 3개, 각 항목은 한 줄로 잘림 */}
         <ul className="text-[#00193E] text-[12pt] font-medium space-y-1">
-          {highlights.slice(0, 3).map((item, index) => (
+          {events.slice(0, 3).map((event, index) => (
             <li key={index} className="line-clamp-1">
-              {item}
+              {event.title}
             </li>
           ))}
         </ul>
@@ -58,8 +71,9 @@ const ActivityShowCard: React.FC<ActivityShowCardProps> = ({
 
       {/* 하단 고정 영역 */}
       <div className="flex justify-between items-center mt-4">
+        {/* 하이라이트 = 이벤트 가 맞다면, 표시되는 eventCount 개수 조정 필요 */}
         <span className="text-[11pt] font-semibold text-[#9B9DA1]">외 {eventCount}개의 이벤트</span>
-        <GrayBgButton onClick={() => console.log('보기 클릭됨')} />
+        <GrayBgButton onClick={() => navigate(`/archive/${id}`)} />
       </div>
     </div>
   );
