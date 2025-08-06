@@ -1,21 +1,12 @@
 // src/features/archive/hooks/useActivities.ts
-/*존재 이유:
- axios.get('/activities/') 같은 코드를 컴포넌트에 직접 쓸 필요가 없으며, 
- 에러나 로딩 처리 자동화가 가능함
- */
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  fetchActivities,
-  fetchActivityById,
-  createActivity,
-  updateActivity,
-  partialUpdateActivity,
-  deleteActivity,
-} from '../api/activityApi';
+import { useActivityApi } from '../api/activityApi';
 import type { Activity } from '../types/activity';
-import axios from '@/api/axios';
 
 export const useActivities = () => {
+  const { fetchActivities } = useActivityApi();
+
   return useQuery({
     queryKey: ['activities'],
     queryFn: fetchActivities,
@@ -23,20 +14,22 @@ export const useActivities = () => {
 };
 
 export const useActivity = (id: string | number) => {
+  const { fetchActivityById } = useActivityApi();
+
   return useQuery({
     queryKey: ['activity', id],
     queryFn: () => fetchActivityById(id),
-    enabled: !!id, // id가 있을 때만 fetch
+    enabled: !!id,
   });
 };
 
-//mutation(): 서버에 무언가 변경하는 요청을 보낼 때 사용 + 작업 상태 자동관리
 export const useCreateActivity = () => {
   const queryClient = useQueryClient();
+  const { createActivity } = useActivityApi();
+
   return useMutation({
     mutationFn: async (newActivity: Partial<Activity>) => {
-      const response = await axios.post('/activities/', newActivity);
-      return response.data;
+      return await createActivity(newActivity);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activities'] });
@@ -46,6 +39,8 @@ export const useCreateActivity = () => {
 
 export const usePartialUpdateActivity = () => {
   const queryClient = useQueryClient();
+  const { partialUpdateActivity } = useActivityApi();
+
   return useMutation({
     mutationFn: ({ id, data }: { id: string | number; data: any }) =>
       partialUpdateActivity(id, data),
@@ -58,8 +53,12 @@ export const usePartialUpdateActivity = () => {
 
 export const useDeleteActivity = () => {
   const queryClient = useQueryClient();
+  const { deleteActivity } = useActivityApi();
+
   return useMutation({
     mutationFn: deleteActivity,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['activities'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['activities'] });
+    },
   });
 };

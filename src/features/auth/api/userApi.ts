@@ -1,5 +1,5 @@
 // src/features/auth/api/userApi.ts
-import axios from '@/api/axios';
+import axios from '@/axios/axios';
 
 export const createUser = async (data: any) => {
   const response = await axios.post('/users/', data);

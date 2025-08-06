@@ -1,32 +1,32 @@
 // src/features/archive/api/activityApi.ts
-import axios from '@/api/axios';
+import { useAuth } from '@clerk/clerk-react';
+import { authRequest } from '@/axios/authRequest';
 
-export const fetchActivities = async () => {
-  const response = await axios.get('/api/activities/');
-  return response.data.activities || [];
-};
+export const useActivityApi = () => {
+  const { getToken } = useAuth();
 
-export const createActivity = async (data: any) => {
-  const response = await axios.post('/api/activities/', data);
-  return response.data;
-};
+  const fetchActivities = () => authRequest(getToken, 'get', '/api/activities/');
 
-export const fetchActivityById = async (id: string | number) => {
-  const response = await axios.get(`/api/activities/${id}/`);
-  return response.data;
-};
+  const createActivity = (data: any) => authRequest(getToken, 'post', '/api/activities/', data);
 
-export const updateActivity = async (id: string | number, data: any) => {
-  const response = await axios.put(`/api/activities/${id}/`, data);
-  return response.data;
-};
+  const fetchActivityById = (id: string | number) =>
+    authRequest(getToken, 'get', `/api/activities/${id}/`);
 
-export const partialUpdateActivity = async (id: string | number, data: any) => {
-  const response = await axios.patch(`/api/activities/${id}/`, data);
-  return response.data;
-};
+  const updateActivity = (id: string | number, data: any) =>
+    authRequest(getToken, 'put', `/api/activities/${id}/`, data);
 
-export const deleteActivity = async (id: string | number) => {
-  const response = await axios.delete(`/api/activities/${id}/`);
-  return response.data;
+  const partialUpdateActivity = (id: string | number, data: any) =>
+    authRequest(getToken, 'patch', `/api/activities/${id}/`, data);
+
+  const deleteActivity = (id: string | number) =>
+    authRequest(getToken, 'delete', `/api/activities/${id}/`);
+
+  return {
+    fetchActivities,
+    createActivity,
+    fetchActivityById,
+    updateActivity,
+    partialUpdateActivity,
+    deleteActivity,
+  };
 };
