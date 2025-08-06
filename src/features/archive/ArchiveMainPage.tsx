@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ProfileCard, SideBar, ActivityShowCard } from '@/features/archive/components';
 import DeleteOrAdd from '@/shared/components/DeleteOrAdd';
 import SortingBar from '@/shared/components/SortingBar';
-import { mockActivities as dummyData } from './dummy';
+import { useActivities, useDeleteActivity } from './hooks/useActivities';
+import type { Activity } from './types/activity';
 
 const mockUser = {
   name: '조은성',
@@ -13,30 +14,45 @@ const mockUser = {
   interest: '서비스기획/UX디자인',
 };
 
-// 공통 활동 리스트 (카드 + 사이드바 둘 다 이 리스트에서 필드 분기)
-const data = dummyData;
 const ArchiveMainPage: React.FC = () => {
-  const [sortOption, setSortOption] = useState('진행 중');
+  const { data, isLoading, error } = useActivities();
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [activities, setActivities] = useState(data);
+  const [sortOption, setSortOption] = useState('진행 중');
+
+  const { mutate: deleteActivity } = useDeleteActivity();
+  const navigate = useNavigate();
 
   const handleSelect = (id: string) => {
     setSelectedId((prev) => (prev === id ? null : id));
   };
 
   const handleDelete = () => {
-    // api 연결 시 수정
     if (selectedId) {
-      setActivities((prev) => prev.filter((a) => a.id !== selectedId));
+      deleteActivity(Number(selectedId), {
+        onSuccess: () => {
+          setSelectedId(null);
+        },
+        onError: (error) => {
+          console.error('삭제 실패:', error);
+          alert('삭제에 실패했습니다.');
+        },
+      });
     }
   };
 
-  // SideBar에서 사용할 최소 필드만 변환
-  const recentActivityList = data.slice(0, 3).map((activity) => ({
-    id: activity.id,
-    title: activity.title,
-    path: `/archive/${activity.id}`, // url "activity" > "archive" 로 수정
-  }));
+  const handleAddClick = () => {
+    navigate('/archive/new'); // "new"를 id처럼 보냄
+  };
+
+  const recentActivityList =
+    data?.slice(0, 3).map((activity: Activity) => ({
+      id: activity.id,
+      title: activity.title,
+      path: `/archive/${activity.id}`,
+    })) || [];
+
+  if (isLoading) return <p className="p-10 text-gray-500">로딩 중입니다...</p>;
+  if (error) return <p className="p-10 text-red-500">에러 발생: {(error as Error).message}</p>;
 
   return (
     <div className="min-h-screen bg-[#F9FAFC] px-16 py-10 space-y-10">
@@ -49,13 +65,11 @@ const ArchiveMainPage: React.FC = () => {
 
         {/* 오른쪽 활동 영역 */}
         <div className="flex-1 flex flex-col space-y-6">
-          {/* 상단: 나의 활동 + 버튼 정렬 */}
+          {/* 상단 */}
           <div className="flex justify-between items-start w-full">
             <h2 className="text-[20pt] font-bold text-[#00193E]">나의 활동</h2>
-
-            {/* 버튼과 필터 묶음 */}
             <div className="flex flex-col items-end gap-2">
-              <DeleteOrAdd onDeleteClick={handleDelete} />
+              <DeleteOrAdd onAddClick={handleAddClick} onDeleteClick={handleDelete} />
               <SortingBar
                 selected={sortOption}
                 onSelect={(val) => setSortOption(val)}
@@ -64,13 +78,18 @@ const ArchiveMainPage: React.FC = () => {
             </div>
           </div>
 
-          {/* 활동 카드 영역 */}
+          {/* 활동 카드 */}
           <div className="flex flex-wrap gap-2.5">
-            {activities.map((activity) => (
+            {data?.map((activity: Activity) => (
               <ActivityShowCard
                 key={activity.id}
-                {...activity}
-                isSelected={selectedId === activity.id}
+                id={String(activity.id)}
+                title={activity.title}
+                type={activity.category}
+                period={`${activity.startDate} ~ ${activity.endDate}`}
+                highlights={activity.keywords ? activity.keywords.split(',') : []}
+                eventCount={0} // 백엔드 연동 안 되어 있다면 임시로 0
+                isSelected={selectedId === String(activity.id)}
                 onSelect={handleSelect}
               />
             ))}

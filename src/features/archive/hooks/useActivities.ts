@@ -12,6 +12,8 @@ import {
   partialUpdateActivity,
   deleteActivity,
 } from '../api/activityApi';
+import type { Activity } from '../types/activity';
+import axios from '@/api/axios';
 
 export const useActivities = () => {
   return useQuery({
@@ -28,27 +30,29 @@ export const useActivity = (id: string | number) => {
   });
 };
 
+//mutation(): 서버에 무언가 변경하는 요청을 보낼 때 사용 + 작업 상태 자동관리
 export const useCreateActivity = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: createActivity,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['activities'] }),
+    mutationFn: async (newActivity: Partial<Activity>) => {
+      const response = await axios.post('/activities/', newActivity);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['activities'] });
+    },
   });
 };
 
-export const useUpdateActivity = (id: string | number) => {
+export const usePartialUpdateActivity = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: any) => updateActivity(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['activities'] }),
-  });
-};
-
-export const usePartialUpdateActivity = (id: string | number) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: any) => partialUpdateActivity(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['activities'] }),
+    mutationFn: ({ id, data }: { id: string | number; data: any }) =>
+      partialUpdateActivity(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['activities'] });
+      queryClient.invalidateQueries({ queryKey: ['activity'] });
+    },
   });
 };
 
