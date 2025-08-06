@@ -2,8 +2,8 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 //import SetupTestPage from '@/pages/SetupTestPage';
 import TestPage from '@/pages/TestPage';
-import BasicInfoInputPage from '@/pages/BasicInfoInputPage';
-import QuestionInputPage from '@/pages/QuestionInputPage';
+import BasicInfoInputPage from '@/features/resume-setup/BasicInfoInputPage';
+import QuestionInputPage from '@/features/resume-setup/QuestionInputPage';
 import MainPage from '@/pages/MainPage';
 import Header from '@/shared/layout/Header';
 import ResumeEditPage from '@/features/resume-editor/ResumeEditPage';
@@ -22,12 +22,12 @@ const AppRouter = () => {
       <main className="px-6 py-8">
         <Routes>
           {/* 비로그인 상태에서 보여줄 경로 */}
-          <Route path="/" element={<SignedOut>{/*<MainPage />*/}</SignedOut>} />
+          <Route path="/" element={<SignedOut>{<MainPage />}</SignedOut>} />
 
           {/* 로그인 상태에서 보여줄 경로들 */}
-          <Route path="/testpage" element={<TestPage />} />
+          {/* <Route path="/testpage" element={<TestPage />} /> */}
           <Route
-            path="/resume/setup"
+            path="/resume/basic-info"
             element={
               <SignedIn>
                 <BasicInfoInputPage />
@@ -35,7 +35,7 @@ const AppRouter = () => {
             }
           />
           <Route
-            path="/resume/question"
+            path="/resume/question-input"
             element={
               <SignedIn>
                 <QuestionInputPage />

@@ -5,21 +5,21 @@ import { authRequest } from '@/axios/authRequest';
 export const useActivityApi = () => {
   const { getToken } = useAuth();
 
-  const fetchActivities = () => authRequest(getToken, 'get', '/api/activities/');
+  const fetchActivities = () => authRequest(getToken, 'get', '/activities/');
 
-  const createActivity = (data: any) => authRequest(getToken, 'post', '/api/activities/', data);
+  const createActivity = (data: any) => authRequest(getToken, 'post', '/activities/', data);
 
   const fetchActivityById = (id: string | number) =>
-    authRequest(getToken, 'get', `/api/activities/${id}/`);
+    authRequest(getToken, 'get', `/activities/${id}/`);
 
   const updateActivity = (id: string | number, data: any) =>
-    authRequest(getToken, 'put', `/api/activities/${id}/`, data);
+    authRequest(getToken, 'put', `/activities/${id}/`, data);
 
   const partialUpdateActivity = (id: string | number, data: any) =>
-    authRequest(getToken, 'patch', `/api/activities/${id}/`, data);
+    authRequest(getToken, 'patch', `/activities/${id}/`, data);
 
   const deleteActivity = (id: string | number) =>
-    authRequest(getToken, 'delete', `/api/activities/${id}/`);
+    authRequest(getToken, 'delete', `/activities/${id}/`);
 
   return {
     fetchActivities,

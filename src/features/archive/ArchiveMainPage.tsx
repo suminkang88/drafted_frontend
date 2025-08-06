@@ -45,7 +45,7 @@ const ArchiveMainPage: React.FC = () => {
   };
 
   const recentActivityList =
-    data?.slice(0, 3).map((activity: Activity) => ({
+    data?.activities?.slice(0, 3).map((activity: Activity) => ({
       id: activity.id,
       title: activity.title,
       path: `/archive/${activity.id}`,
@@ -80,7 +80,7 @@ const ArchiveMainPage: React.FC = () => {
 
           {/* 활동 카드 */}
           <div className="flex flex-wrap gap-2.5">
-            {data?.map((activity: Activity) => (
+            {data?.activities?.map((activity: Activity) => (
               <ActivityShowCard
                 key={activity.id}
                 id={String(activity.id)}
@@ -88,7 +88,7 @@ const ArchiveMainPage: React.FC = () => {
                 type={activity.category}
                 period={`${activity.startDate} ~ ${activity.endDate}`}
                 highlights={activity.keywords ? activity.keywords.split(',') : []}
-                eventCount={0} // 백엔드 연동 안 되어 있다면 임시로 0
+                eventCount={0}
                 isSelected={selectedId === String(activity.id)}
                 onSelect={handleSelect}
               />
