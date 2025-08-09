@@ -87,7 +87,13 @@ const ArchiveMainPage: React.FC = () => {
                 title={activity.title}
                 type={activity.category}
                 period={`${activity.startDate} ~ ${activity.endDate}`}
-                highlights={activity.keywords ? activity.keywords.split(',') : []}
+                highlights={
+                  Array.isArray(activity.keywords)
+                    ? activity.keywords
+                    : activity.keywords
+                      ? [activity.keywords]
+                      : []
+                }
                 eventCount={0}
                 isSelected={selectedId === String(activity.id)}
                 onSelect={handleSelect}

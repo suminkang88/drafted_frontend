@@ -75,10 +75,21 @@ const ArchiveDetailPage: React.FC = () => {
       setEndDate(activity.endDate);
       setRole(activity.role);
       setDescription(activity.description);
-      setKeywords(activity.keywords?.split(',') || []);
+      if (Array.isArray(activity.keywords)) {
+        setKeywords(activity.keywords);
+      } else if (typeof activity.keywords === 'string') {
+        setKeywords(
+          activity.keywords
+            .split(',')
+            .map((kw: string) => kw.trim().replace(/^{|}$/g, '').replace(/^"|"$/g, ''))
+            .filter(Boolean)
+        );
+      } else {
+        setKeywords([]);
+      }
       setEvents(activity.events ?? []);
     }
-  }, [activity]);
+  }, [activity, isNew]);
 
   const handleAddKeyword = (keyword: string) => {
     if (!keywords.includes(keyword)) {
@@ -98,7 +109,8 @@ const ArchiveDetailPage: React.FC = () => {
       endDate,
       role,
       description,
-      keywords: keywords.join(','),
+      // {"a,b,c"} (문자열)
+      keywords: keywords.length > 0 ? `{${keywords.join(',')}}` : '{}',
     };
 
     if (!title || !category || !startDate || !endDate || !role) {
