@@ -44,7 +44,7 @@ const ArchiveMainPage: React.FC = () => {
         {/* 왼쪽 영역 */}
         <div className="flex flex-col gap-y-10 min-w-[300px] max-w-[350px]">
           <ProfileCard user={mockUser} />
-          <SideBar title="최근 접속한 활동" events={recentActivityList} />
+          <SideBar title="최근 접속한 활동" items={recentActivityList} />
         </div>
 
         {/* 오른쪽 활동 영역 */}

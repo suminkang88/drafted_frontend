@@ -98,46 +98,92 @@ const FileUploader = () => {
   );
 };
 
-interface ActivityRecordCardProps {
-  event?: Event;
-  isEmpty?: boolean;
+interface EmptyProps {
+  onSelect: (id: string) => void;
+  isSelected: boolean;
 }
 
-const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({ event, isEmpty }) => {
-  // if (isEmpty) {
-  // const fields = defaultFields;
-  // } else {
-  //   const fields =
-  // }
+interface EventProps {
+  event: Event;
+  onSelect: (id: string) => void;
+  isSelected: boolean;
+}
 
+type ActivityRecordCardProps = EmptyProps | EventProps;
+
+const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
+  isSelected = false,
+  onSelect,
+  ...props
+}) => {
+  // const isSelected = props.isSelected;
+  // const onSelect = props.onSelect;
   const fields = defaultFields;
-
-  return (
-    <div className="flex flex-col gap-6">
-      <h2 className="text-[20pt] font-bold text-[#00193E]">
-        {isEmpty ? '이벤트 제목' : event?.title}
-      </h2>
-      <div className=" w-[918px] bg-[#E4E8EE] border-gray-300 rounded-xl p-4 ">
-        {fields.map((field) => (
-          <div className="pl-3" key={field.key}>
-            <div key={field.key} className="  w-[858px] h-[50px] rounded-md px-3 py-3">
-              <div className="flex items-start justify-between">
-                <label className="block font-noto font-semibold text-[18px] text-gray-700">
-                  {field.label}
-                </label>
+  if ('event' in props) {
+    const event = props.event;
+    return (
+      <div onClick={() => onSelect(event.id)} className="flex flex-col gap-6 w-[918px]">
+        <div className="flex items-center justify-between">
+          <h2 className="text-[20pt] font-bold text-[#00193E]">{event.title}</h2>
+          <span className="text-[#9B9DA1] text-[12pt] font-noto whitespace-nowrap">
+            {`${event.startDate} ~ ${event.endDate}`}
+          </span>
+        </div>
+        <div
+          className={`bg-[#E4E8EE]  rounded-xl p-4 border ${isSelected ? 'border-black' : 'border-gray-300'}`}
+        >
+          {fields.map((field) => (
+            <div className="pl-3" key={field.key}>
+              <div key={field.key} className="  w-[858px] h-[50px] rounded-md px-3 py-3">
+                <div className="flex items-start justify-between">
+                  <label className="block font-noto font-semibold text-[18px] text-gray-700">
+                    {field.label}
+                  </label>
+                </div>
               </div>
+              <textarea
+                placeholder={field.placeholder}
+                className="w-[858px] h-[99px] border rounded-md p-2 text-lg focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                rows={2}
+              />
             </div>
-            <textarea
-              placeholder={field.placeholder}
-              className="w-[858px] h-[99px] border rounded-md p-2 text-lg focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
-              rows={2}
-            />
-          </div>
-        ))}
-        <FileUploader />
+          ))}
+          <FileUploader />
+        </div>
       </div>
-    </div>
-  );
+    );
+    // } else {
+    //   // event를 새로 정의해야 하나..
+    //   return (
+    //     <div onClick={() => onSelect(event.id)} className="flex flex-col gap-6 w-[918px]">
+    //       <div className="flex items-center justify-between">
+    //         <h2 className="text-[20pt] font-bold text-[#00193E]">{event.title}</h2>
+    //         <span className="text-[#9B9DA1] text-[12pt] font-noto whitespace-nowrap">
+    //           이벤트 제목
+    //         </span>
+    //       </div>
+    //       <div className="  bg-[#E4E8EE] border-gray-300 rounded-xl p-4 ">
+    //         {fields.map((field) => (
+    //           <div className="pl-3" key={field.key}>
+    //             <div key={field.key} className="  w-[858px] h-[50px] rounded-md px-3 py-3">
+    //               <div className="flex items-start justify-between">
+    //                 <label className="block font-noto font-semibold text-[18px] text-gray-700">
+    //                   {field.label}
+    //                 </label>
+    //               </div>
+    //             </div>
+    //             <textarea
+    //               placeholder={field.placeholder}
+    //               className="w-[858px] h-[99px] border rounded-md p-2 text-lg focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+    //               rows={2}
+    //             />
+    //           </div>
+    //         ))}
+    //         <FileUploader />
+    //       </div>
+    //     </div>
+    //   )
+  }
 };
 
 export default ActivityRecordCard;

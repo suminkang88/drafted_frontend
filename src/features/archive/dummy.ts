@@ -5,7 +5,17 @@ export const mockActivities = [
     type: '교내 동아리',
     period: '2022.02.12 ~ 2024.05.31.',
     events: [
-      { id: '1', title: '사설 프로세스 개선 어쩌고 저쩌고 이름이 카드를 넘치게 되면', path: '#' },
+      {
+        id: '1',
+        title: '사설 프로세스 개선 어쩌고 저쩌고',
+        startDate: '2025-02-12',
+        endDate: '2025-05-30',
+        situation: '예시 상황',
+        task: '예시 과업',
+        action: '예시 행동',
+        result: '예시 결과',
+        path: '#',
+      },
       { id: '2', title: 'SNS 리브랜딩', path: '#' },
     ],
     highlights: [
