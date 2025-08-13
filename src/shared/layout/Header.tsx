@@ -1,6 +1,46 @@
 import { Link, Outlet } from 'react-router-dom';
 import { useState } from 'react';
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from '@clerk/clerk-react';
+
+// 추가 정보 입력이 완료된 사용자만 네비게이션을 보여주는 컴포넌트
+const AuthenticatedNavigation = () => {
+  const { user } = useUser();
+
+  // 사용자의 추가 정보 입력 여부 확인
+  const hasAdditionalInfo = user?.unsafeMetadata.hasAdditionalInfo;
+
+  // 추가 정보가 없으면 네비게이션 숨김
+  if (!hasAdditionalInfo) {
+    return <UserButton afterSignOutUrl="/" />;
+  }
+
+  return (
+    <>
+      <Link
+        to="/archive"
+        className="font-noto transition-all hover:text-[#FFB38A] hover:font-semibold"
+      >
+        활동 아카이빙
+      </Link>
+
+      <Link
+        to="/resume/new"
+        className="font-noto transition-all hover:text-[#FFB38A] hover:font-semibold"
+      >
+        새 지원서 작성
+      </Link>
+
+      <Link
+        to="/resume/history"
+        className="font-noto transition-all hover:text-[#FFB38A] hover:font-semibold"
+      >
+        내 지원서 관리
+      </Link>
+
+      <UserButton afterSignOutUrl="/" />
+    </>
+  );
+};
 
 const Header = () => {
   const [isHovered, setIsHovered] = useState(false);
@@ -27,30 +67,7 @@ const Header = () => {
 
           {/* 로그인 상태 */}
           <SignedIn>
-            <>
-              <Link
-                to="/archive"
-                className="font-noto transition-all hover:text-[#FFB38A] hover:font-semibold"
-              >
-                활동 아카이빙
-              </Link>
-
-              <Link
-                to="/resume/new"
-                className="font-noto transition-all hover:text-[#FFB38A] hover:font-semibold"
-              >
-                새 지원서 작성
-              </Link>
-
-              <Link
-                to="/resume/history"
-                className="font-noto transition-all hover:text-[#FFB38A] hover:font-semibold"
-              >
-                내 지원서 관리
-              </Link>
-
-              <UserButton afterSignOutUrl="/" />
-            </>
+            <AuthenticatedNavigation />
           </SignedIn>
         </nav>
       </header>
