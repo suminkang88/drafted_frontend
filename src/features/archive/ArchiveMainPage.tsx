@@ -1,10 +1,14 @@
+//delete 할 때 카드 선택하면 표시되도록 고쳐야 함!
+//보기 버튼 선택하면 색 바뀌도록 고쳐야 함!
+//startDate, endDate 받아온 거 날짜만 뜨도록 고쳐야함!
+
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ProfileCard, SideBar, ActivityShowCard } from '@/features/archive/components';
 import DeleteOrAdd from '@/shared/components/DeleteOrAdd';
 import SortingBar from '@/shared/components/SortingBar';
 import { useActivities, useDeleteActivity } from './hooks/useActivities';
-import type { Activity } from './types/activity';
+import type { ActivityRecord } from './types/activity';
 
 const mockUser = {
   name: '조은성',
@@ -80,21 +84,16 @@ const ArchiveMainPage: React.FC = () => {
 
           {/* 활동 카드 */}
           <div className="flex flex-wrap gap-2.5">
-            {data?.activities?.map((activity: Activity) => (
+            {data?.activities?.map((activity: ActivityRecord) => (
               <ActivityShowCard
-                key={activity.id}
-                id={String(activity.id)}
+        
+                id={activity.id}
                 title={activity.title}
-                type={activity.category}
+                category={activity.category}
                 period={`${activity.startDate} ~ ${activity.endDate}`}
-                highlights={
-                  Array.isArray(activity.keywords)
-                    ? activity.keywords
-                    : activity.keywords
-                      ? [activity.keywords]
-                      : []
-                }
-                eventCount={0}
+                recentEvents={activity.isFavorite}
+                isFavorite={activity.isFavorite}
+                event_count={activity.event_count}
                 isSelected={selectedId === String(activity.id)}
                 onSelect={handleSelect}
               />

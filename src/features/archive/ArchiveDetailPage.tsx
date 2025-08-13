@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import SideBar from '@/features/archive/components/SideBar';
 import { UndoButton, ActivityRecordCard } from '@/shared/components';
 import { useActivity, usePartialUpdateActivity, useCreateActivity } from './hooks/useActivities';
-import { Activity, ActivityRecord } from './types/activity';
+import { Activity } from './types/activity';
 
 interface KeywordProps {
   keywords: string[];
@@ -47,25 +47,27 @@ const KeywordInput: React.FC<KeywordProps> = ({ keywords, onAdd, onRemove }) => 
   );
 };
 
-// ... 상단 import 및 KeywordInput 동일
-
 const ArchiveDetailPage: React.FC = () => {
+  // id=="new"이면 새로 만들기 모드, 아니면 수정 모드
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isNew = id === 'new';
 
-  const { data: activity } = useActivity(!isNew ? id! : '');
-  const { mutate: updateActivity } = usePartialUpdateActivity();
-  const { mutate: createActivity } = useCreateActivity();
+  // 수정 모드에서 상세 조회 (새로 만들기면 요청 비활성화)
+  const { data: activity, isLoading, error } = useActivity(id ?? '', {
+    enabled: !isNew && !!id,
+  });
+  const { mutate: updateActivity } = usePartialUpdateActivity(); // PATCH(부분 수정)
+  const { mutate: createActivity } = useCreateActivity(); // POST(생성)
 
-  const [events, setEvents] = useState<ActivityRecord[]>([]);
-  const [keywords, setKeywords] = useState<string[]>([]);
   const [title, setTitle] = useState('새 활동');
   const [category, setCategory] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [role, setRole] = useState('');
   const [description, setDescription] = useState('');
+  const [keywords, setKeywords] = useState<string[]>([]); // ← 배열로 관리
+  const [events, setEvents] = useState<Activity[]>([]);
 
   useEffect(() => {
     if (activity && !isNew) {
@@ -75,33 +77,47 @@ const ArchiveDetailPage: React.FC = () => {
       setEndDate(activity.endDate);
       setRole(activity.role);
       setDescription(activity.description);
+
+      // keywords 정규화
       if (Array.isArray(activity.keywords)) {
-        setKeywords(activity.keywords);
+        setKeywords(activity.keywords.filter((x): x is string => typeof x === 'string'));
       } else if (typeof activity.keywords === 'string') {
-        setKeywords(
-          activity.keywords
-            .split(',')
-            .map((kw: string) => kw.trim().replace(/^{|}$/g, '').replace(/^"|"$/g, ''))
-            .filter(Boolean)
-        );
+        const arr = activity.keywords
+          .split(',')
+          .map((kw: string) =>
+            kw.trim().replace(/^[{\[]\s*|\s*[}\]]$/g, '').replace(/^['"]|['"]$/g, '')
+          )
+          .filter(Boolean);
+        setKeywords(arr);
       } else {
         setKeywords([]);
       }
-      setEvents(activity.events ?? []);
+
+      // events 정규화
+      setEvents(Array.isArray(activity.events) ? activity.events : []);
     }
   }, [activity, isNew]);
 
   const handleAddKeyword = (keyword: string) => {
     if (!keywords.includes(keyword)) {
-      setKeywords([...keywords, keyword]);
+      setKeywords((prev) => [...prev, keyword]);
     }
   };
 
   const handleRemoveKeyword = (keyword: string) => {
-    setKeywords(keywords.filter((k) => k !== keyword));
+    setKeywords((prev) => prev.filter((k) => k !== keyword));
   };
 
   const handleSave = () => {
+    if (!title || !category || !startDate || !endDate || !role) {
+      alert('모든 필드를 입력해주세요.');
+      return;
+    }
+
+    // 저장 시에만 {a,b} 포맷으로 변환
+    const toCurlyCsv = (arr: string[]) =>
+      arr.length ? `{${arr.map((s) => s.trim()).filter(Boolean).join(',')}}` : '{}';
+
     const payload = {
       title,
       category,
@@ -109,14 +125,8 @@ const ArchiveDetailPage: React.FC = () => {
       endDate,
       role,
       description,
-      // {"a,b,c"} (문자열)
-      keywords: keywords.length > 0 ? `{${keywords.join(',')}}` : '{}',
+      keywords: toCurlyCsv(keywords), // 예: {"a","b"}가 아니라 {a,b}로 보냄
     };
-
-    if (!title || !category || !startDate || !endDate || !role) {
-      alert('모든 필드를 입력해주세요.');
-      return;
-    }
 
     if (isNew) {
       createActivity(payload, {
@@ -130,9 +140,9 @@ const ArchiveDetailPage: React.FC = () => {
           alert('생성 중 오류가 발생했습니다.');
         },
       });
-    } else {
+    } else if (id) {
       updateActivity(
-        { id: id!, data: payload },
+        { id, data: payload },
         {
           onSuccess: () => alert('성공적으로 저장되었습니다!'),
           onError: (error) => {
@@ -143,6 +153,10 @@ const ArchiveDetailPage: React.FC = () => {
       );
     }
   };
+
+  // 간단 가드(선택): 수정 모드일 때만 표시
+  if (!isNew && isLoading) return <div className="p-8">로딩 중…</div>;
+  if (!isNew && error) return <div className="p-8">불러오기 실패</div>;
 
   return (
     <div className="flex gap-16 px-12 py-10 bg-[#F8F9FA] min-h-screen">
@@ -220,11 +234,7 @@ const ArchiveDetailPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-4">
               <p className="w-[150px] text-[#9B9DA1] font-semibold">활동 키워드</p>
-              <KeywordInput
-                keywords={keywords}
-                onAdd={handleAddKeyword}
-                onRemove={handleRemoveKeyword}
-              />
+              <KeywordInput keywords={keywords} onAdd={handleAddKeyword} onRemove={handleRemoveKeyword} />
             </div>
           </div>
 
@@ -235,9 +245,7 @@ const ArchiveDetailPage: React.FC = () => {
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-16">
             {events.length > 0 ? (
-              events.map((event: ActivityRecord) => (
-                <ActivityRecordCard key={event.id} event={event} />
-              ))
+              events.map((event: Activity) => <ActivityRecordCard key={event.id} event={event} />)
             ) : (
               <ActivityRecordCard isEmpty />
             )}
