@@ -54,7 +54,11 @@ const ArchiveDetailPage: React.FC = () => {
   const isNew = id === 'new';
 
   // 수정 모드에서 상세 조회 (새로 만들기면 요청 비활성화)
-  const { data: activity, isLoading, error } = useActivity(id ?? '', {
+  const {
+    data: activity,
+    isLoading,
+    error,
+  } = useActivity(id ?? '', {
     enabled: !isNew && !!id,
   });
   const { mutate: updateActivity } = usePartialUpdateActivity(); // PATCH(부분 수정)
@@ -80,12 +84,15 @@ const ArchiveDetailPage: React.FC = () => {
 
       // keywords 정규화
       if (Array.isArray(activity.keywords)) {
-        setKeywords(activity.keywords.filter((x): x is string => typeof x === 'string'));
+        setKeywords(activity.keywords.filter((x: any): x is string => typeof x === 'string'));
       } else if (typeof activity.keywords === 'string') {
         const arr = activity.keywords
           .split(',')
           .map((kw: string) =>
-            kw.trim().replace(/^[{\[]\s*|\s*[}\]]$/g, '').replace(/^['"]|['"]$/g, '')
+            kw
+              .trim()
+              .replace(/^[{\[]\s*|\s*[}\]]$/g, '')
+              .replace(/^['"]|['"]$/g, '')
           )
           .filter(Boolean);
         setKeywords(arr);
@@ -116,7 +123,12 @@ const ArchiveDetailPage: React.FC = () => {
 
     // 저장 시에만 {a,b} 포맷으로 변환
     const toCurlyCsv = (arr: string[]) =>
-      arr.length ? `{${arr.map((s) => s.trim()).filter(Boolean).join(',')}}` : '{}';
+      arr.length
+        ? `{${arr
+            .map((s) => s.trim())
+            .filter(Boolean)
+            .join(',')}}`
+        : '{}';
 
     const payload = {
       title,
@@ -234,7 +246,11 @@ const ArchiveDetailPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-4">
               <p className="w-[150px] text-[#9B9DA1] font-semibold">활동 키워드</p>
-              <KeywordInput keywords={keywords} onAdd={handleAddKeyword} onRemove={handleRemoveKeyword} />
+              <KeywordInput
+                keywords={keywords}
+                onAdd={handleAddKeyword}
+                onRemove={handleRemoveKeyword}
+              />
             </div>
           </div>
 

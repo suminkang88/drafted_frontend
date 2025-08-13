@@ -8,11 +8,11 @@ interface ActivityShowCardProps {
   title: string; //api
   category: string; //api
   period: string; //api
-  recentEvents:string[] | null;//api
+  recentEvents: string[] | null; //api
   event_count: number; //api
-  isSelected: boolean; 
+  isSelected: boolean;
   onSelect: (id: string) => void;
-  
+
   isFavorite?: boolean; //api
 }
 
@@ -21,7 +21,7 @@ const ActivityShowCard: React.FC<ActivityShowCardProps> = ({
   title,
   category,
   period,
-  recentEvents=[],
+  recentEvents = [],
   event_count,
   isFavorite = false,
   isSelected = false,
@@ -33,17 +33,17 @@ const ActivityShowCard: React.FC<ActivityShowCardProps> = ({
   const handleToggleFavorite = () => {
     setFavorite((prev) => !prev);
   };
-  
+
   // recentEvents를 안전한 string[]으로 정규화
   const highlights: string[] = Array.isArray(recentEvents)
     ? recentEvents
-        .map(ev => (typeof ev === 'string' ? ev : '')) // 혹시 모를 타입 섞임 방지
+        .map((ev) => (typeof ev === 'string' ? ev : '')) // 혹시 모를 타입 섞임 방지
         .filter(Boolean)
     : [];
 
   return (
     <div
-      onClick={() => onSelect(id)}
+      onClick={() => onSelect(id.toString())}
       className={`w-[280px] h-[300px] p-5 bg-white rounded-[15px] shadow-md border  relative flex flex-col justify-between
       ${isSelected ? 'border-black' : 'border-[#C6CBD1]'}`}
     >
@@ -82,7 +82,9 @@ const ActivityShowCard: React.FC<ActivityShowCardProps> = ({
       {/* 하단 고정 영역 */}
       <div className="flex justify-between items-center mt-4">
         {/* 하이라이트 = 이벤트 가 맞다면, 표시되는 eventCount 개수 조정 필요 */}
-        <span className="text-[11pt] font-semibold text-[#9B9DA1]">외 {event_count}개의 이벤트</span>
+        <span className="text-[11pt] font-semibold text-[#9B9DA1]">
+          외 {event_count}개의 이벤트
+        </span>
         <GrayBgButton onClick={() => navigate(`/archive/${id}`)} />
       </div>
     </div>
