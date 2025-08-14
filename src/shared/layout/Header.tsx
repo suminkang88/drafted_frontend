@@ -1,5 +1,5 @@
-import { Link, Outlet } from 'react-router-dom';
-import { useState } from 'react';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from '@clerk/clerk-react';
 
 // 추가 정보 입력이 완료된 사용자만 네비게이션을 보여주는 컴포넌트
@@ -44,6 +44,22 @@ const AuthenticatedNavigation = () => {
 
 const Header = () => {
   const [isHovered, setIsHovered] = useState(false);
+  const { user, isLoaded } = useUser();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // 로그인 직후 추가정보 미입력 유저를 자동으로 추가정보 페이지로 안내
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!user) return;
+
+    // 최초 1회 추가정보 입력 로직을 주석처리 (서버 연동 테스트용)
+    // const hasAdditionalInfo = (user.unsafeMetadata as any)?.hasAdditionalInfo === true;
+    // const allowList = ['/auth/additional-info', '/terms', '/privacy'];
+    // if (!hasAdditionalInfo && !allowList.includes(location.pathname)) {
+    //   navigate('/auth/additional-info', { replace: true });
+    // }
+  }, [isLoaded, user, location.pathname, navigate]);
 
   return (
     <div className="bg-[#F8F9FA]">

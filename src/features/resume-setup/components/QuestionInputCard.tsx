@@ -4,18 +4,28 @@ import clsx from 'clsx';
 interface QuestionInputProps {
   index: number;
   onLengthChange: (index: number, value: number) => void;
+  onContentChange: (content: string) => void;
 }
 
 const PREDEFINED_LENGTHS = [300, 500, 700, 1000];
 
-const QuestionInputCard: React.FC<QuestionInputProps> = ({ index, onLengthChange }) => {
+const QuestionInputCard: React.FC<QuestionInputProps> = ({
+  index,
+  onLengthChange,
+  onContentChange,
+}) => {
   const [selectedLength, setSelectedLength] = useState<number | null>(null);
   const [customInputMode, setCustomInputMode] = useState(false);
   const [customLength, setCustomLength] = useState('');
   const [customLengths, setCustomLengths] = useState<number[]>([]);
+  const [content, setContent] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleTextareaChange = () => {
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
+    setContent(newContent);
+    onContentChange(newContent);
+
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = 'auto';
@@ -61,6 +71,7 @@ const QuestionInputCard: React.FC<QuestionInputProps> = ({ index, onLengthChange
         className="w-full resize-none overflow-hidden border border-gray-300 rounded-md p-4 text-sm"
         placeholder="지원서 주요 문항을 붙여넣어 주세요."
         rows={1}
+        value={content}
         onChange={handleTextareaChange}
       />
 
