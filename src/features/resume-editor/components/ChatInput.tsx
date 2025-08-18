@@ -4,6 +4,8 @@ interface ChatInputProps {
   text: string;
   setText: (text: string) => void;
   onSubmit: (text: string) => void;
+  disabled?: boolean;
+  isLoading?: boolean; // ⬅️ 추가
 }
 
 const ChatInput = ({ text, setText, onSubmit }: ChatInputProps) => {
