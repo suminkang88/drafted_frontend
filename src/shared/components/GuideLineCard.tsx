@@ -1,33 +1,51 @@
+//일단 문항 작성 (활동 추천 x) 가이드라인만 적용했습니다..!
 import React from 'react';
+import { useEditorGuideline } from '@/features/resume-editor/hooks/useEditor';
 
 interface GuideLineCardProps {
+  /** 문항 ID가 있으면 API로 가이드라인을 조회합니다. */
+  questionId?: number | string;
+  /** questionId가 없거나, 에러/빈 응답일 때 표시할 기본 텍스트 */
   text?: string;
+  className?: string;
 }
 
 const GuideLineCard: React.FC<GuideLineCardProps> = ({
-  text = `1. 관점 설정
-단순히 ‘이 활동이 좋아서’가 아니라, 평소 자신이 어떤 문제의식이나 흥미를 가지고 있었는지 먼저 짚어주세요.
-예: “기획자로서 사용자 행동을 더 깊이 이해하고 싶습니다.”
-
-2. 경험 연결
-그 관점이 어떻게 쌓였는지, 내가 이전에 어떤 활동을 하면서 이와 맞닿은 경험을 했는지를 연결해보세요.
-예: “이전 활동에서 직접 유저 설문을 기획하며 행동을 수치로 확인한 경험이 흥미로웠습니다.”
-
-3. 해당 활동의 의미
-지금 이 활동이 내 흐름 안에서 어떤 역할을 해줄 수 있을지 설명해주세요.
-예: “그래서 이번 동아리에서 그 흥미를 직접 실무로 추진해보고 싶습니다.”
-
-4. 구체적인 목표와 열정 강조
-단순 기대보다는, 내가 무엇을 준비했고 어떤 태도로 임할 것인지 보여주면 설득력이 올라가요.
-예: “기획에 대한 관심을 바탕으로, 앞으로 동아리 내에서도 프로젝트 초기 구조 설계에 적극 참여하겠습니다.”`,
+  questionId,
+  text = '가이드라인이 없습니다.',
+  className,
 }) => {
+  console.log('[GuideLineCard] questionId:', questionId);
+  // questionId가 있을 때만 네트워크 호출
+  const { data, isLoading, isError, error } = useEditorGuideline(questionId);
+
+  console.log('[GuideLineCard] useEditor state:', {
+    isLoading,
+    isError,
+    data,
+    error,
+  });
+
+  // 표시할 내용 결정: 로딩 → 에러 → API 데이터 → fallback text
+  let contentToShow = text;
+
+  if (questionId) {
+    if (isLoading) {
+      contentToShow = '가이드라인을 불러오는 중입니다...';
+    } else if (isError) {
+      contentToShow = text || '가이드라인을 불러오는 데 실패했습니다.';
+    } else if (data?.content) {
+      contentToShow = data.content;
+    } else {
+      contentToShow = text || '가이드라인이 비어 있습니다.';
+    }
+  }
+
   return (
-    <div className="bg-[#FFFFFF] border border-[#9B9DA1] border-opacity-50 shadow-[0_4px_4px_rgba(0,0,0,0.25)] rounded-lg p-5">
-      <div className="text-[#000000] font-noto font-bold text-lg flex items-center mb-3">
-        📍 이렇게 작성해보세요
-      </div>
-      <hr className="border-[#9B9DA1] mb-3" />
-      <p className="font-noto text-[#000000] text-base whitespace-pre-line">{text}</p>
+    <div className={className}>
+      <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0 }}>
+        {contentToShow}
+      </pre>
     </div>
   );
 };

@@ -7,9 +7,16 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-
       '@': path.resolve(__dirname, './src'),
-
+    },
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://api.drafty.site', // 실제 백엔드 서버 주소
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 });

@@ -58,6 +58,8 @@ const ResumeEditPage = () => {
 
   const [messageThread, setMessageThread] = useState<MessageItem[]>([]);
 
+  //임시 questionId(guidelinecard의 api 연결을 위함)
+  const questionId = 4;
   return (
     <>
       <div className="flex w-full min-h-screen bg-gray-50">
@@ -110,7 +112,8 @@ const ResumeEditPage = () => {
         <div className="flex flex-col p-6 flex-1">
           {/* 상단: 가이드 카드 */}
           <div className="mb-4">
-            <GuideLineCard />
+            <GuideLineCard questionId={questionId} />
+            {/*여기 가이드라인 컴포넌트 안에 들어가서 수정해야 할 듯! api넣어야해*/}
           </div>
 
           <div className="flex flex-col justify-end h-full">

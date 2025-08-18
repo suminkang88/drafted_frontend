@@ -5,7 +5,7 @@
 /* Noto Sans */
 @font-face {
   font-family: 'Noto Sans';
-  src: url('/assets/fonts/NotoSansKR-VariableFont_wght.ttf') format('truetype');
+  src: url('/fonts/NotoSansKR-VariableFont_wght.ttf') format('ttf');
   font-weight: 100 900;
   font-style: normal;
 }
