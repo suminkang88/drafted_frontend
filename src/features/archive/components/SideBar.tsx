@@ -11,8 +11,6 @@ type SideBarItem = {
 interface SideBarProps {
   title: string; // 사이드바 상단 제목을 props로 받음
   items: SideBarItem[];
-  // activities?: Activity[];
-  // events?: Event[];
 }
 
 const SideBar: React.FC<SideBarProps> = ({ title, items }) => {

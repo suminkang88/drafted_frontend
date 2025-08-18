@@ -21,3 +21,11 @@ export interface Event {
   updatedAt?: Date; // 필요 시 수정
   path?: string; // 필요 시 수정 (프론트 단에서만 활용)
 }
+
+export interface CreateEventInput {
+  title: string;
+  situation?: string;
+  task?: string;
+  action?: string;
+  result?: string;
+}

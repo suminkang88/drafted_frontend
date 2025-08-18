@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Event } from '@/app/types';
+import { CreateEventInput, Event } from '@/app/types';
 
 interface RecordField {
   label: string;
@@ -99,8 +99,11 @@ const FileUploader = () => {
 };
 
 interface EmptyProps {
+  tempId: string;
   onSelect: (id: string) => void;
   isSelected: boolean;
+  onSave: (eventData: CreateEventInput) => void;
+  isNew?: boolean;
 }
 
 interface EventProps {
@@ -116,9 +119,14 @@ const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
   onSelect,
   ...props
 }) => {
-  // const isSelected = props.isSelected;
-  // const onSelect = props.onSelect;
+  const [situation, setSituation] = useState('');
+  const [task, setTask] = useState('');
+  const [action, setAction] = useState('');
+  const [result, setResult] = useState('');
+  const [title, setTitle] = useState('');
+
   const fields = defaultFields;
+
   if ('event' in props) {
     const event = props.event;
     return (
@@ -129,9 +137,7 @@ const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
             {`${event.startDate} ~ ${event.endDate}`}
           </span>
         </div>
-        <div
-          className={`bg-[#E4E8EE]  rounded-xl p-4 border ${isSelected ? 'border-black' : 'border-gray-300'}`}
-        >
+        <div className={`bg-[#E4E8EE]  rounded-xl p-4 border ${isSelected ? 'border-black' : ''}`}>
           {fields.map((field) => (
             <div className="pl-3" key={field.key}>
               <div key={field.key} className="  w-[858px] h-[50px] rounded-md px-3 py-3">
@@ -145,6 +151,28 @@ const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
                 placeholder={field.placeholder}
                 className="w-[858px] h-[99px] border rounded-md p-2 text-lg focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
                 rows={2}
+                value={
+                  field.key === 'situation'
+                    ? event.situation
+                    : field.key === 'task'
+                      ? event.task
+                      : field.key === 'action'
+                        ? event.action
+                        : field.key === 'result'
+                          ? event.result
+                          : ''
+                }
+                onChange={(e) => {
+                  if (field.key === 'situation') {
+                    setSituation(e.target.value);
+                  } else if (field.key === 'task') {
+                    setTask(e.target.value);
+                  } else if (field.key === 'action') {
+                    setAction(e.target.value);
+                  } else if (field.key === 'result') {
+                    setResult(e.target.value);
+                  }
+                }}
               />
             </div>
           ))}
@@ -152,37 +180,75 @@ const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
         </div>
       </div>
     );
-    // } else {
-    //   // event를 새로 정의해야 하나..
-    //   return (
-    //     <div onClick={() => onSelect(event.id)} className="flex flex-col gap-6 w-[918px]">
-    //       <div className="flex items-center justify-between">
-    //         <h2 className="text-[20pt] font-bold text-[#00193E]">{event.title}</h2>
-    //         <span className="text-[#9B9DA1] text-[12pt] font-noto whitespace-nowrap">
-    //           이벤트 제목
-    //         </span>
-    //       </div>
-    //       <div className="  bg-[#E4E8EE] border-gray-300 rounded-xl p-4 ">
-    //         {fields.map((field) => (
-    //           <div className="pl-3" key={field.key}>
-    //             <div key={field.key} className="  w-[858px] h-[50px] rounded-md px-3 py-3">
-    //               <div className="flex items-start justify-between">
-    //                 <label className="block font-noto font-semibold text-[18px] text-gray-700">
-    //                   {field.label}
-    //                 </label>
-    //               </div>
-    //             </div>
-    //             <textarea
-    //               placeholder={field.placeholder}
-    //               className="w-[858px] h-[99px] border rounded-md p-2 text-lg focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
-    //               rows={2}
-    //             />
-    //           </div>
-    //         ))}
-    //         <FileUploader />
-    //       </div>
-    //     </div>
-    //   )
+  } else {
+    // 새 이벤트 생성 (비어 있는 이벤트)
+    const tempId = props.tempId;
+
+    const handleSave = () => {
+      props.onSave({ title, situation, task, action, result });
+    };
+
+    return (
+      <div className="flex flex-col gap-6 w-[918px]">
+        <div className="flex items-center justify-between">
+          <input
+            className="text-[20pt] font-bold text-[#00193E] bg-transparent outline-none"
+            placeholder="이벤트 제목"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-4">
+          <button
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            onClick={handleSave}
+          >
+            저장
+          </button>
+        </div>
+        <div className="bg-[#E4E8EE] border-gray-300 rounded-xl p-4">
+          {fields.map((field) => (
+            <div className="pl-3" key={field.key}>
+              <div key={field.key} className="w-[858px] h-[50px] rounded-md px-3 py-3">
+                <div className="flex items-start justify-between">
+                  <label className="block font-noto font-semibold text-[18px] text-gray-700">
+                    {field.label}
+                  </label>
+                </div>
+              </div>
+              <textarea
+                placeholder={field.placeholder}
+                className="w-[858px] h-[99px] border rounded-md p-2 text-lg focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                rows={2}
+                value={
+                  field.key === 'situation'
+                    ? situation
+                    : field.key === 'task'
+                      ? task
+                      : field.key === 'action'
+                        ? action
+                        : field.key === 'result'
+                          ? result
+                          : ''
+                }
+                onChange={(e) => {
+                  if (field.key === 'situation') {
+                    setSituation(e.target.value);
+                  } else if (field.key === 'task') {
+                    setTask(e.target.value);
+                  } else if (field.key === 'action') {
+                    setAction(e.target.value);
+                  } else if (field.key === 'result') {
+                    setResult(e.target.value);
+                  }
+                }}
+              />
+            </div>
+          ))}
+          <FileUploader />
+        </div>
+      </div>
+    );
   }
 };
 

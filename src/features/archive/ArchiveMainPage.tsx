@@ -4,9 +4,11 @@ import { ProfileCard, SideBar, ActivityShowCard } from '@/features/archive/compo
 import DeleteOrAdd from '@/shared/components/DeleteOrAdd';
 import SortingBar from '@/shared/components/SortingBar';
 import { mockActivities as dummyData } from './dummy';
+import { useActivities, useDeleteActivity } from './hooks/useActivities';
+import { Activity } from '@/app/types';
 
 const mockUser = {
-  name: '조은성',
+  name: '김민지', // 로그인한 사용자 이름 뜨게끔 수정
   university: '서울대학교',
   majors: '독어독문학과, 소비자학과, 언론정보학과 전공',
   graduationYear: 2027,
@@ -14,29 +16,48 @@ const mockUser = {
 };
 
 // 공통 활동 리스트 (카드 + 사이드바 둘 다 이 리스트에서 필드 분기)
-const data = dummyData;
 const ArchiveMainPage: React.FC = () => {
+  const { data, isLoading, error } = useActivities();
   const [sortOption, setSortOption] = useState('진행 중');
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [activities, setActivities] = useState(data);
-
+  const { mutate: deleteActivity } = useDeleteActivity();
+  const navigate = useNavigate();
   const handleSelect = (id: string) => {
     setSelectedId((prev) => (prev === id ? null : id));
   };
 
   const handleDelete = () => {
-    // api 연결 시 수정
+    const confirmDelete = window.confirm('정말 삭제하시겠습니까?');
+    if (!confirmDelete) return;
     if (selectedId) {
-      setActivities((prev) => prev.filter((a) => a.id !== selectedId));
+      deleteActivity(Number(selectedId), {
+        onSuccess: () => {
+          setSelectedId(null);
+        },
+        onError: (error) => {
+          console.error('삭제 실패:', error);
+          alert('삭제에 실패했습니다.');
+        },
+      });
     }
   };
 
+  const handleAddClick = () => {
+    navigate('/archive/new'); // "new"를 id처럼 보냄
+  };
+
   // SideBar에서 사용할 최소 필드만 변환
-  const recentActivityList = data.slice(0, 3).map((activity) => ({
-    id: activity.id,
-    title: activity.title,
-    path: `/archive/${activity.id}`, // url "activity" > "archive" 로 수정
-  }));
+  const recentActivityList =
+    data?.activities?.slice(0, 3).map((activity: Activity) => ({
+      id: activity.id,
+      title: activity.title,
+      path: `/archive/${activity.id}`, // url "activity" > "archive" 로 수정
+    })) || [];
+
+  if (isLoading) return <p className="p-10 text-gray-500">로딩 중입니다...</p>;
+  if (error) return <p className="p-10 text-red-500">에러 발생: {(error as Error).message}</p>;
+
+  console.log(data);
 
   return (
     <div className="min-h-screen bg-[#F9FAFC] px-16 py-10 space-y-10">
@@ -55,7 +76,7 @@ const ArchiveMainPage: React.FC = () => {
 
             {/* 버튼과 필터 묶음 */}
             <div className="flex flex-col items-end gap-2">
-              <DeleteOrAdd onDeleteClick={handleDelete} />
+              <DeleteOrAdd onAddClick={handleAddClick} onDeleteClick={handleDelete} />
               <SortingBar
                 selected={sortOption}
                 onSelect={(val) => setSortOption(val)}
@@ -66,11 +87,22 @@ const ArchiveMainPage: React.FC = () => {
 
           {/* 활동 카드 영역 */}
           <div className="flex flex-wrap gap-2.5">
-            {activities.map((activity) => (
+            {data?.activities?.map((activity: Activity) => (
               <ActivityShowCard
                 key={activity.id}
-                {...activity}
-                isSelected={selectedId === activity.id}
+                id={String(activity.id)}
+                title={activity.title}
+                type={activity.category}
+                period={`${activity.startDate} ~ ${activity.endDate}`}
+                highlights={
+                  Array.isArray(activity.keywords)
+                    ? activity.keywords
+                    : activity.keywords
+                      ? [activity.keywords]
+                      : []
+                }
+                eventCount={activity.eventCount || 0}
+                isSelected={selectedId === String(activity.id)}
                 onSelect={handleSelect}
               />
             ))}

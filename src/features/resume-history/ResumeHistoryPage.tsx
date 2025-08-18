@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Header, DeleteOrAdd } from '@/shared/components';
 import { applications as dummyData } from './dummy';
 import { Application } from '@/app/types';
+import { useNavigate } from 'react-router-dom';
 
 interface tableProps {
   data: Application[];
@@ -28,7 +29,7 @@ const ApplicationTable: React.FC<tableProps> = ({ data, toggleSelect }) => {
                 <input type="checkbox" onChange={() => toggleSelect?.(application.id)} />
               </td>
               <td className="p-4 font-semibold text-[#00193E] border-l border-[#9B9DA1]">
-                <a href={`/applications/${application.id}`}>{application.name}</a>
+                <a href={`/resume/${application.id}`}>{application.name}</a>
               </td>
               <td className="p-4 font-semibold text-[#00193E] border-l border-[#9B9DA1]">
                 {application.category}
@@ -48,11 +49,14 @@ const ApplicationTable: React.FC<tableProps> = ({ data, toggleSelect }) => {
 };
 
 const ResumeHistoryPage = () => {
+  const navigate = useNavigate();
+
   const [applications, setApplications] = useState<Application[]>(dummyData);
   // db와 연결 시 위 부분 수정.
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const onDeleteClick = () => {
+    alert(`select`);
     setApplications((prev) => prev.filter((app) => !selectedIds.includes(app.id)));
     setSelectedIds([]); // 선택 초기화)
   };
@@ -63,17 +67,19 @@ const ResumeHistoryPage = () => {
     );
   };
 
+  const onAddClick = () => {
+    navigate('/resume/setup');
+  };
+
   return (
-    <div className="bg-[#F8F9FA] ">
-      {/* 헤더 및 배경색 지우기 */}
-      <Header />
+    <div>
       <div className="m-32 mt-16">
         {/* margin 값 모든 페이지에서 통일 필요 */}
         <div className="">
           <h1 className="text-[#00193e] text-[42px] font-extrabold font-noto">나의 지원서</h1>
         </div>
         <div className="flex justify-end items-center gap-4 mt-16 mb-8">
-          <DeleteOrAdd onDeleteClick={onDeleteClick} />
+          <DeleteOrAdd onAddClick={onAddClick} onDeleteClick={onDeleteClick} />
         </div>
         <ApplicationTable data={applications} toggleSelect={onToggleSelect} />
       </div>
