@@ -2,11 +2,13 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 //import SetupTestPage from '@/pages/SetupTestPage';
 import TestPage from '@/pages/TestPage';
-import BasicInfoInputPage from '@/pages/BasicInfoInputPage';
-import QuestionInputPage from '@/pages/QuestionInputPage';
+import BasicInfoInputPage from '@/features/resume-setup/BasicInfoInputPage';
+import QuestionInputPage from '@/features/resume-setup/QuestionInputPage';
 import MainPage from '@/pages/MainPage';
 import Header from '@/shared/layout/Header';
 import ResumeEditPage from '@/features/resume-editor/ResumeEditPage';
+import ResumeHistoryPage from '@/features/resume-history/ResumeHistoryPage';
+import ApplicationForm from '@/features/resume-history/ResumeViewPage';
 import ArchiveMainPage from '@/features/archive/ArchiveMainPage';
 import ArchiveDetailPage from '@/features/archive/ArchiveDetailPage';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
@@ -50,6 +52,9 @@ const AppRouter = () => {
               </SignedIn>
             }
           />
+          <Route path="/resume" element={<ResumeHistoryPage />} />
+          <Route path="/resume/:id" element={<ApplicationForm />} />
+
           <Route path="/archive" element={<ArchiveMainPage />} />
           <Route path="/archive/:id" element={<ArchiveDetailPage />} />
         </Routes>
