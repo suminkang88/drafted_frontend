@@ -64,18 +64,18 @@ jobs:
             --paths "/*"
 
 
-      # - name: Send Slack notification (Success)
-      #   if: success()
-      #   uses: rtCamp/action-slack-notify@v2
-      #   env:
-      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-      #     SLACK_MESSAGE: "🚀 *Deploy Front 성공!* \nBranch: ${{ github.ref }} \nCommit: ${{ github.sha }} \n🟢 서비스가 정상적으로 배포되었습니다!"
-      #     SLACK_COLOR: "#36a64f"
+      - name: Send Slack notification (Success)
+        if: success()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_MESSAGE: "🚀 *Deploy Front 성공!* \nBranch: ${{ github.ref }} \nCommit: ${{ github.sha }} \n🟢 서비스가 정상적으로 배포되었습니다!"
+          SLACK_COLOR: "#36a64f"
 
-      # - name: Send Slack notification (Failure)
-      #   if: failure()
-      #   uses: rtCamp/action-slack-notify@v2
-      #   env:
-      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-      #     SLACK_MESSAGE: "❌ *Deploy Front 실패!* \nBranch: ${{ github.ref }} \nCommit: ${{ github.sha }} \n🔴 배포 중 오류가 발생했습니다. 로그를 확인하세요."
-      #     SLACK_COLOR: "#ff0000"
+      - name: Send Slack notification (Failure)
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_MESSAGE: "❌ *Deploy Front 실패!* \nBranch: ${{ github.ref }} \nCommit: ${{ github.sha }} \n🔴 배포 중 오류가 발생했습니다. 로그를 확인하세요."
+          SLACK_COLOR: "#ff0000"
