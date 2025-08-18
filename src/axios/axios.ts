@@ -1,6 +1,6 @@
-// src/axios/axios.ts
+// src/api/axios.ts
 import axios from 'axios';
-
+import { useAuth } from '@clerk/clerk-react';
 const instance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   withCredentials: true,

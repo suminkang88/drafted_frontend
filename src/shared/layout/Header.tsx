@@ -31,7 +31,7 @@ const AuthenticatedNavigation = () => {
       </Link>
 
       <Link
-        to="/resume/history"
+        to="/resume"
         className="font-noto transition-all hover:text-[#FFB38A] hover:font-semibold"
       >
         내 지원서 관리

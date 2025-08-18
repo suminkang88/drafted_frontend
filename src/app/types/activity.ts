@@ -4,11 +4,14 @@ export interface Activity {
   id: string;
   title: string;
   category: string;
-  period: string;
+  startDate: string;
+  endDate: string;
   role?: string;
+  description?: string;
   keywords?: string;
   eventCount?: number;
   isFavorite: boolean;
+  createdAt: string;
+  updatedAt: string;
   events?: Event[];
-  highlights?: string[]; // 필요 시 수정
 }

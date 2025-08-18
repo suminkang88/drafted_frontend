@@ -189,6 +189,7 @@ const QuestionInputPage = () => {
         ))}
       </div>
 
+
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
       {/* 다음 버튼 */}

@@ -92,6 +92,7 @@ const ArchiveMainPage: React.FC = () => {
           <div className="flex justify-between items-start w-full">
             <h2 className="text-[20pt] font-bold text-[#00193E]">나의 활동</h2>
             <div className="flex flex-col items-end gap-2">
+
               <DeleteOrAdd onAddClick={handleAddClick} onDeleteClick={handleDeleteClick} />
               <SortingBar
                 selected={sortOption}

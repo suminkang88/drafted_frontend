@@ -15,6 +15,7 @@ const BasicInfoInputPage: React.FC = () => {
   const [category, setCategory] = useState('');
   const [position, setPosition] = useState('');
   const [description, setDescription] = useState('');
+
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 

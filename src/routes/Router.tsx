@@ -8,6 +8,8 @@ import ActivityRecommendPage from '@/features/resume-setup/ActivityRecommendPage
 import MainPage from '@/pages/MainPage';
 import Header from '@/shared/layout/Header';
 import ResumeEditPage from '@/features/resume-editor/ResumeEditPage';
+import ResumeHistoryPage from '@/features/resume-history/ResumeHistoryPage';
+import ApplicationForm from '@/features/resume-history/ResumeViewPage';
 import ArchiveMainPage from '@/features/archive/ArchiveMainPage';
 import ArchiveDetailPage from '@/features/archive/ArchiveDetailPage';
 import AdditionalInfoPage from '@/features/auth/AdditionalInfoPage';
@@ -108,6 +110,16 @@ const AppRouter = () => {
               </SignedIn>
             }
           />
+          <Route path="/resume" element={
+            <SignedIn>
+              <ResumeHistoryPage />
+            </SignedIn>
+            } />
+          <Route path="/resume/:id" element={
+              <SignedIn>
+                <ApplicationForm />
+              </SignedIn>
+            } />
           <Route
             path="/archive"
             element={

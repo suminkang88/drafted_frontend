@@ -4,4 +4,5 @@ export interface Application {
   category: string;
   position: string;
   deadline: string;
+  questions?: {}[];
 }
