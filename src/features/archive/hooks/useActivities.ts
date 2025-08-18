@@ -13,13 +13,13 @@ export const useActivities = () => {
   });
 };
 
-export const useActivity = (id: string | number) => {
+export const useActivity = (id: string | number, p0: { enabled: boolean }) => {
   const { fetchActivityById } = useActivityApi();
 
   return useQuery({
     queryKey: ['activity', id],
     queryFn: () => fetchActivityById(id),
-    enabled: !!id,
+    enabled: !!id && p0.enabled, // id가 있을 때만 호출
   });
 };
 
