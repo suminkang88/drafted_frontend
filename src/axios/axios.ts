@@ -1,7 +1,6 @@
 // src/api/axios.ts
 import axios from 'axios';
 import { useAuth } from '@clerk/clerk-react';
-
 const instance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   withCredentials: true,
@@ -10,26 +9,12 @@ const instance = axios.create({
   },
 });
 
-// ✅ Clerk 토큰을 외부에서 주입받는 요청 래퍼
-export const authRequest = async <T = any>(
-  // getToken: () = Promise<string | null>, // 🔄 getToken을 인자로 받음
-  method: 'get' | 'post' | 'put' | 'patch' | 'delete',
-  url: string,
-  data?: any
-): Promise<T> => {
-  const { getToken } = useAuth();
-  const token = await getToken();
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-  const response = await instance.request<T>({
-    method,
-    url,
-    data,
-    headers,
-    withCredentials: true,
-  });
-
-  return response.data;
-};
-
 export default instance;
+
+/*
+ex) archive/에서 activities API를 호출할 때:
+src/axios/axios.ts, src/authRequest.ts, src/app/queryClient.ts
+-> src/features/archive/api/activityApi.ts
+-> src/features/archive/hooks/useActivities.ts
+-> src/features/archive/ArchiveMainPage.tsx, src/features/archive/ArchiveDetailPage.tsx
+*/

@@ -15,7 +15,8 @@
     "types": ["vite/client"],
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "types": ["vite/client"]
   },
   "include": ["src", "vite-env.d.ts"]
 }

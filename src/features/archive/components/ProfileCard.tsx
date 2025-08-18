@@ -3,9 +3,9 @@ import React from 'react';
 interface UserProfile {
   name: string;
   university: string;
-  majors: string;
-  graduationYear: number;
-  interest: string;
+  major: string;
+  graduation_year: number;
+  field_of_interest: string;
 }
 
 const ProfileCard: React.FC<{ user: UserProfile }> = ({ user }) => {
@@ -21,9 +21,9 @@ const ProfileCard: React.FC<{ user: UserProfile }> = ({ user }) => {
       {/* 상세 정보 */}
       <div className="text-[12pt] text-[#9B9DA1] space-y-1 pl-1 leading-snug">
         <p>{user.university}</p>
-        <p>{user.majors}</p>
-        <p>{user.graduationYear}년 졸업예정</p>
-        <p>관심분야: {user.interest}</p>
+        <p>{user.major}</p>
+        <p>{user.graduation_year}년 졸업예정</p>
+        <p>관심분야: {user.field_of_interest}</p>
       </div>
     </div>
   );

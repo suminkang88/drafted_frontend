@@ -74,7 +74,7 @@ export const useActivity = (id: string | number, p0: { enabled: boolean }) => {
 
       return normalizedActivity;
     },
-    enabled: !!id,
+    enabled: !!id && p0.enabled,
   });
 };
 

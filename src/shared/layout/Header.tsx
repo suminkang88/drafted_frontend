@@ -1,9 +1,65 @@
-import { Link, Outlet } from 'react-router-dom';
-import { useState } from 'react';
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from '@clerk/clerk-react';
+
+// 추가 정보 입력이 완료된 사용자만 네비게이션을 보여주는 컴포넌트
+const AuthenticatedNavigation = () => {
+  const { user } = useUser();
+
+  // 사용자의 추가 정보 입력 여부 확인
+  const hasAdditionalInfo = user?.unsafeMetadata.hasAdditionalInfo;
+
+  // 추가 정보가 없으면 네비게이션 숨김
+  if (!hasAdditionalInfo) {
+    return <UserButton afterSignOutUrl="/" />;
+  }
+
+  return (
+    <>
+      <Link
+        to="/archive"
+        className="font-noto transition-all hover:text-[#FFB38A] hover:font-semibold"
+      >
+        활동 아카이빙
+      </Link>
+
+      <Link
+        to="/resume/new"
+        className="font-noto transition-all hover:text-[#FFB38A] hover:font-semibold"
+      >
+        새 지원서 작성
+      </Link>
+
+      <Link
+        to="/resume"
+        className="font-noto transition-all hover:text-[#FFB38A] hover:font-semibold"
+      >
+        내 지원서 관리
+      </Link>
+
+      <UserButton afterSignOutUrl="/" />
+    </>
+  );
+};
 
 const Header = () => {
   const [isHovered, setIsHovered] = useState(false);
+  const { user, isLoaded } = useUser();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // 로그인 직후 추가정보 미입력 유저를 자동으로 추가정보 페이지로 안내
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!user) return;
+
+    // 최초 1회 추가정보 입력 로직을 주석처리 (서버 연동 테스트용)
+    // const hasAdditionalInfo = (user.unsafeMetadata as any)?.hasAdditionalInfo === true;
+    // const allowList = ['/auth/additional-info', '/terms', '/privacy'];
+    // if (!hasAdditionalInfo && !allowList.includes(location.pathname)) {
+    //   navigate('/auth/additional-info', { replace: true });
+    // }
+  }, [isLoaded, user, location.pathname, navigate]);
 
   return (
     <div className="bg-[#F8F9FA]">
@@ -27,30 +83,7 @@ const Header = () => {
 
           {/* 로그인 상태 */}
           <SignedIn>
-            <>
-              <Link
-                to="/archive"
-                className="font-noto transition-all hover:text-[#FFB38A] hover:font-semibold"
-              >
-                활동 아카이빙
-              </Link>
-
-              <Link
-                to="/resume/new"
-                className="font-noto transition-all hover:text-[#FFB38A] hover:font-semibold"
-              >
-                새 지원서 작성
-              </Link>
-
-              <Link
-                to="/resume"
-                className="font-noto transition-all hover:text-[#FFB38A] hover:font-semibold"
-              >
-                내 지원서 관리
-              </Link>
-
-              <UserButton afterSignOutUrl="/" />
-            </>
+            <AuthenticatedNavigation />
           </SignedIn>
         </nav>
       </header>

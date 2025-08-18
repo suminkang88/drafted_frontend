@@ -6,6 +6,7 @@ interface BlackBgButtonProps {
   className?: string;
   textClassName?: string;
   innerText?: string;
+  disabled?: boolean;
 }
 
 const BlackBgButton: React.FC<BlackBgButtonProps> = ({
@@ -13,6 +14,7 @@ const BlackBgButton: React.FC<BlackBgButtonProps> = ({
   className = '',
   textClassName = '',
   innerText = '다른 활동 찾아보기',
+  disabled = false,
 }) => {
   const mergedClassName = twMerge(
     `
@@ -28,6 +30,7 @@ const BlackBgButton: React.FC<BlackBgButtonProps> = ({
         hover:bg-[#002a5c] 
         transition-colors 
         duration-200 
+        ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
         `,
     className
   );
@@ -42,7 +45,7 @@ const BlackBgButton: React.FC<BlackBgButtonProps> = ({
   );
 
   return (
-    <button onClick={onClick} className={mergedClassName}>
+    <button onClick={onClick} className={mergedClassName} disabled={disabled}>
       <span className={mergedTextClassName}>{innerText}</span>
     </button>
   );
