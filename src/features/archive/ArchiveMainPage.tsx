@@ -79,11 +79,11 @@ const ArchiveMainPage: React.FC = () => {
         {/* 왼쪽 영역 */}
         <div className="flex flex-col gap-y-10 min-w-[300px] max-w-[350px]">
           {/* ✅ ProfileCard에 실제 API 데이터 전달 */}
-          {isUserLoading && <p className="text-gray-500">프로필 불러오는 중...</p>}
+          {/* {isUserLoading && <p className="text-gray-500">프로필 불러오는 중...</p>}
           {isUserError && <p className="text-red-500">프로필 불러오기 실패</p>}
-          {userData && <ProfileCard user={userData} />}
+          {userData && <ProfileCard user={userData} />} */}
 
-          <SideBar title="최근 접속한 활동" events={recentActivityList} />
+          <SideBar title="최근 접속한 활동" items={recentActivityList} />
         </div>
 
         {/* 오른쪽 활동 영역 */}
@@ -92,7 +92,6 @@ const ArchiveMainPage: React.FC = () => {
           <div className="flex justify-between items-start w-full">
             <h2 className="text-[20pt] font-bold text-[#00193E]">나의 활동</h2>
             <div className="flex flex-col items-end gap-2">
-
               <DeleteOrAdd onAddClick={handleAddClick} onDeleteClick={handleDeleteClick} />
               <SortingBar
                 selected={sortOption}
