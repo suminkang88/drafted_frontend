@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { CreateEventInput, Event } from '@/app/types';
+import { GrayBgButton, BlackBgButton } from '@/shared/components';
 
 interface RecordField {
   label: string;
@@ -61,7 +62,10 @@ const FileUploader = () => {
           width={30}
           height={30}
           className="cursor-pointer"
-          onClick={() => inputRef.current?.click()}
+          onClick={(e) => {
+            e.stopPropagation();
+            inputRef.current?.click();
+          }}
         />
         <span className="block font-noto font-semibold text-[18px] text-gray-700">
           파일 추가 (PDF, Word)
@@ -82,13 +86,25 @@ const FileUploader = () => {
       <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-gray-700">
         {uploadedFiles.map((file, index) => (
           <li key={index} className="flex items-center justify-between rounded-md">
-            <button onClick={() => handleView(file)} title="View">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleView(file);
+              }}
+              title="View"
+            >
               <img src="/icons/view.svg" alt="View" width={40} height={40} />
             </button>
             <div className="flex-1 ml-2 mr-4">
               <span className="truncate max-w-[60%]">{file.name}</span>
             </div>
-            <button onClick={() => handleRemove(index)} title="Delete">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRemove(index);
+              }}
+              title="Delete"
+            >
               <img src="/icons/delete.svg" alt="Delete" width={20} height={20} />
             </button>
           </li>
@@ -130,17 +146,24 @@ const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
   if ('event' in props) {
     const event = props.event;
     return (
-      <div onClick={() => onSelect(event.id)} className="flex flex-col gap-6 w-[918px]">
+      <div onClick={() => onSelect(event.id)} className="flex flex-col gap-6 w-full max-w-4xl">
         <div className="flex items-center justify-between">
-          <h2 className="text-[20pt] font-bold text-[#00193E]">{event.title}</h2>
-          <span className="text-[#9B9DA1] text-[12pt] font-noto whitespace-nowrap">
-            {`${event.startDate} ~ ${event.endDate}`}
-          </span>
+          <div className="flex items-center gap-5">
+            <h2 className="text-[20pt] font-bold text-[#00193E]">{event.title}</h2>
+            <span className="text-[#9B9DA1] text-[12pt] font-noto whitespace-nowrap">
+              {`${event.startDate} ~ ${event.endDate}`}
+            </span>
+          </div>
+          <div onClick={(e) => e.stopPropagation()}>
+            <GrayBgButton onClick={() => {}} innerText="수정" className="px-4 py-3" />
+          </div>
+          {/* 수정 버튼 onClick 시 수정 모드로 변경 */}
         </div>
+
         <div className={`bg-[#E4E8EE]  rounded-xl p-4 border ${isSelected ? 'border-black' : ''}`}>
           {fields.map((field) => (
             <div className="pl-3" key={field.key}>
-              <div key={field.key} className="  w-[858px] h-[50px] rounded-md px-3 py-3">
+              <div key={field.key} className="w-full h-[50px] rounded-md px-3 py-3">
                 <div className="flex items-start justify-between">
                   <label className="block font-noto font-semibold text-[18px] text-gray-700">
                     {field.label}
@@ -149,7 +172,7 @@ const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
               </div>
               <textarea
                 placeholder={field.placeholder}
-                className="w-[858px] h-[99px] border rounded-md p-2 text-lg focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                className="w-full h-[99px] border rounded-md p-2 text-lg focus:outline-none focus:ring-1 focus:ring-gray-500 resize-none"
                 rows={2}
                 value={
                   field.key === 'situation'
@@ -173,6 +196,7 @@ const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
                     setResult(e.target.value);
                   }
                 }}
+                onClick={(e) => e.stopPropagation()}
               />
             </div>
           ))}
@@ -181,7 +205,7 @@ const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
       </div>
     );
   } else {
-    // 새 이벤트 생성 (비어 있는 이벤트)
+    // 새 이벤트 생성 (비어 있는 이벤트) or 수정 모드
     const tempId = props.tempId;
 
     const handleSave = () => {
@@ -189,27 +213,44 @@ const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
     };
 
     return (
-      <div className="flex flex-col gap-6 w-[918px]">
+      <div className="flex flex-col gap-6 w-full max-w-4xl">
         <div className="flex items-center justify-between">
           <input
             className="text-[20pt] font-bold text-[#00193E] bg-transparent outline-none"
             placeholder="이벤트 제목"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
           />
-        </div>
-        <div className="flex gap-4">
-          <button
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            onClick={handleSave}
-          >
-            저장
-          </button>
+
+          <div className="flex gap-5">
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                className="w-32 bg-[#F8F9FA] outline-none pl-3"
+                onClick={(e) => e.stopPropagation()}
+              />
+              <span>~</span>
+              <input
+                type="date"
+                className="w-32 bg-[#F8F9FA] outline-none pl-3"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+            <div onClick={(e) => e.stopPropagation()}>
+              <BlackBgButton
+                onClick={handleSave}
+                innerText="저장"
+                className="px-4 py-3 w-20 h-7"
+                textClassName="text-[13px]"
+              />
+            </div>
+          </div>
         </div>
         <div className="bg-[#E4E8EE] border-gray-300 rounded-xl p-4">
           {fields.map((field) => (
             <div className="pl-3" key={field.key}>
-              <div key={field.key} className="w-[858px] h-[50px] rounded-md px-3 py-3">
+              <div key={field.key} className="w-full h-[50px] rounded-md px-3 py-3">
                 <div className="flex items-start justify-between">
                   <label className="block font-noto font-semibold text-[18px] text-gray-700">
                     {field.label}
@@ -218,19 +259,8 @@ const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
               </div>
               <textarea
                 placeholder={field.placeholder}
-                className="w-[858px] h-[99px] border rounded-md p-2 text-lg focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                className="w-full h-[99px] border rounded-md p-2 text-lg focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
                 rows={2}
-                value={
-                  field.key === 'situation'
-                    ? situation
-                    : field.key === 'task'
-                      ? task
-                      : field.key === 'action'
-                        ? action
-                        : field.key === 'result'
-                          ? result
-                          : ''
-                }
                 onChange={(e) => {
                   if (field.key === 'situation') {
                     setSituation(e.target.value);
@@ -242,6 +272,7 @@ const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
                     setResult(e.target.value);
                   }
                 }}
+                onClick={(e) => e.stopPropagation()}
               />
             </div>
           ))}
