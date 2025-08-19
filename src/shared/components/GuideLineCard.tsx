@@ -1,5 +1,6 @@
 //일단 문항 작성 (활동 추천 x) 가이드라인만 적용했습니다..!
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 import { useEditorGuideline } from '@/features/resume-editor/hooks/useEditor';
 
 interface GuideLineCardProps {
@@ -42,10 +43,14 @@ const GuideLineCard: React.FC<GuideLineCardProps> = ({
   }
 
   return (
-    <div className={className}>
-      <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0 }}>
-        {contentToShow}
-      </pre>
+    <div className="bg-[#FFFFFF] border border-[#9B9DA1] border-opacity-50 shadow-[0_4px_4px_rgba(0,0,0,0.25)] rounded-lg p-5">
+      <div className="text-[#000000] font-noto font-bold text-lg flex items-center mb-3">
+        📍 이렇게 작성해보세요
+      </div>
+      <hr className="border-[#9B9DA1] mb-3" />
+      <div className="font-noto text-[#000000] text-base whitespace-pre-line">
+        <ReactMarkdown>{contentToShow}</ReactMarkdown>
+      </div>
     </div>
   );
 };

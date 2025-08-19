@@ -106,40 +106,49 @@ const ArchiveMainPage: React.FC = () => {
 
           {/* 활동 카드 */}
           <div className="flex flex-wrap gap-2.5">
-            {data?.activities?.map((activity: ActivityRecord) => {
-              const idStr = String(activity.id);
-              const isSelected = selectedId === idStr;
-              const period = `${formatDate(activity.startDate)} ~ ${formatDate(activity.endDate)}`;
+            {data?.activities
+              ?.filter((activity: ActivityRecord) => {
+                if (sortOption === '진행 중') {
+                  return !activity.endDate; // endDate가 없으면 진행 중
+                } else if (sortOption === '진행 완료') {
+                  return !!activity.endDate; // endDate가 있으면 진행 완료
+                }
+                return true;
+              })
+              .map((activity: ActivityRecord) => {
+                const idStr = String(activity.id);
+                const isSelected = selectedId === idStr;
+                const period = `${formatDate(activity.startDate)} ~ ${formatDate(activity.endDate)}`;
 
-              return (
-                <div
-                  key={activity.id}
-                  onClick={() => isDeleteMode && handleSelect(idStr)}
-                  className={[
-                    'rounded-2xl transition-all',
-                    isDeleteMode ? 'cursor-pointer' : 'cursor-default',
-                    isSelected
-                      ? 'ring-2 ring-black ring-offset-2 bg-white/70'
-                      : 'ring-1 ring-transparent',
-                    isDeleteMode && !isSelected
-                      ? 'hover:ring-2 hover:ring-black hover:ring-offset-2'
-                      : '',
-                  ].join(' ')}
-                >
-                  <ActivityShowCard
-                    id={activity.id}
-                    title={activity.title}
-                    category={activity.category}
-                    period={period}
-                    recentEvents={activity.recentEvents}
-                    isFavorite={activity.isFavorite}
-                    event_count={activity.event_count}
-                    isSelected={isSelected}
-                    onSelect={handleSelect}
-                  />
-                </div>
-              );
-            })}
+                return (
+                  <div
+                    key={activity.id}
+                    onClick={() => isDeleteMode && handleSelect(idStr)}
+                    className={[
+                      'rounded-2xl transition-all',
+                      isDeleteMode ? 'cursor-pointer' : 'cursor-default',
+                      isSelected
+                        ? 'ring-2 ring-black ring-offset-2 bg-white/70'
+                        : 'ring-1 ring-transparent',
+                      isDeleteMode && !isSelected
+                        ? 'hover:ring-2 hover:ring-black hover:ring-offset-2'
+                        : '',
+                    ].join(' ')}
+                  >
+                    <ActivityShowCard
+                      id={activity.id}
+                      title={activity.title}
+                      category={activity.category}
+                      period={period}
+                      recentEvents={activity.recentEvents}
+                      isFavorite={activity.isFavorite}
+                      event_count={activity.event_count}
+                      isSelected={isSelected}
+                      onSelect={handleSelect}
+                    />
+                  </div>
+                );
+              })}
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SideBar from '@/features/archive/components/SideBar';
 import { UndoButton, ActivityRecordCard as EventCard, DeleteOrAdd } from '@/shared/components';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Event, CreateEventInput } from '@/app/types';
+import { Event, CreateEventInput, Activity } from '@/app/types';
 import { useActivity, usePartialUpdateActivity, useCreateActivity } from './hooks/useActivities';
 import { useEvents, useCreateEvent, useDeleteEvent } from './hooks/useEvents';
 
@@ -205,7 +205,7 @@ const ArchiveDetailPage: React.FC = () => {
   const handleRemoveKeyword = (kw: string) => setKeywords((prev) => prev.filter((k) => k !== kw));
 
   const handleSave = () => {
-    if (!title || !category || !startDate || !endDate || !role) {
+    if (!title || !category || !startDate || !role) {
       alert('모든 필드를 입력해주세요.');
       return;
     }
@@ -220,15 +220,27 @@ const ArchiveDetailPage: React.FC = () => {
         : '{}';
 
     // 백엔드에서 기대하는 필드명으로 변환
-    const payload = {
+    const payload: {
+      title: string;
+      category: string;
+      startDate: string;
+      role: string;
+      description: string;
+      keywords: string;
+      endDate?: string;
+    } = {
       title,
       category,
       startDate,
-      endDate,
       role,
       description,
-      keywords: toCurlyCsv(keywords), // 예: {a,b} 형식으로 보냄
+      keywords: toCurlyCsv(keywords), // 예: {"a","b"}가 아니라 {a,b}로 보냄
     };
+
+    // endDate가 값이 있을 때만 추가
+    if (endDate) {
+      payload.endDate = endDate;
+    }
 
     // undefined 값 제거
     Object.keys(payload).forEach((key) => {
