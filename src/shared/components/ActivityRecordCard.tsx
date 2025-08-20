@@ -146,7 +146,7 @@ const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
   if ('event' in props) {
     const event = props.event;
     return (
-      <div onClick={() => onSelect(event.id)} className="flex flex-col gap-6 w-full max-w-4xl">
+      <div onClick={() => onSelect(event.id)} className="flex flex-col gap-6 w-full">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-5">
             <h2 className="text-[20pt] font-bold text-[#00193E]">{event.title}</h2>
@@ -162,7 +162,7 @@ const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
 
         <div className={`bg-[#E4E8EE]  rounded-xl p-4 border ${isSelected ? 'border-black' : ''}`}>
           {fields.map((field) => (
-            <div className="pl-3" key={field.key}>
+            <div className="px-3" key={field.key}>
               <div key={field.key} className="w-full h-[50px] rounded-md px-3 py-3">
                 <div className="flex items-start justify-between">
                   <label className="block font-noto font-semibold text-[18px] text-gray-700">
@@ -206,6 +206,7 @@ const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
     );
   } else {
     // 새 이벤트 생성 (비어 있는 이벤트) or 수정 모드
+    // onSelect 없어도 되도록 구현 필요
     const tempId = props.tempId;
 
     const handleSave = () => {

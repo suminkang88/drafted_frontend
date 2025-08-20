@@ -308,7 +308,7 @@ const ArchiveDetailPage: React.FC = () => {
             <div className="flex justify-between items-center">
               <input
                 type="text"
-                className="text-[30pt] font-semibold text-[#00193E] bg-[#F8F9FA] outline-none"
+                className="text-[30px] font-extrabold text-[#00193E] bg-[#F8F9FA] outline-none"
                 value={title ?? '새 활동'}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="활동 제목을 입력하세요"
