@@ -7,7 +7,7 @@ interface ActivityShowCardProps {
   title: string;
   category: string;
   period: string;
-  recentEvents: string[] | null;
+  recentEvents: { id: number; event_name: string }[] | null;
   event_count: number;
   isSelected: boolean;
   onSelect: (id: string) => void;
@@ -39,7 +39,7 @@ const ActivityShowCard: React.FC<ActivityShowCardProps> = ({
   };
 
   const highlights: string[] = Array.isArray(recentEvents)
-    ? recentEvents.map((ev) => (typeof ev === 'string' ? ev : '')).filter(Boolean)
+    ? recentEvents.map((ev) => ev.event_name).filter(Boolean)
     : [];
 
   return (

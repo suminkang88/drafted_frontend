@@ -99,3 +99,38 @@ export const useDeleteEvent = (activityId: string) => {
     },
   });
 };
+
+export const useUpdateEvent = (activityId: string) => {
+  const queryClient = useQueryClient();
+  const eventApi = useEventApi();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Event> }) =>
+      eventApi.updateEvent(activityId, id, data),
+
+    // 낙관적 업데이트 (UI 즉시 반영)
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: key(activityId) });
+
+      const prev = queryClient.getQueryData<Event[]>(key(activityId)) ?? [];
+
+      queryClient.setQueryData<Event[]>(key(activityId), (curr = []) =>
+        curr.map((e) => (e.id === id ? { ...e, ...data } : e))
+      );
+
+      return { prev };
+    },
+
+    // 실패 시 롤백
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) {
+        queryClient.setQueryData(key(activityId), ctx.prev);
+      }
+    },
+
+    // 성공 시 데이터 새로고침
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: key(activityId) });
+    },
+  });
+};
