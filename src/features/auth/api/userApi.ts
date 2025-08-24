@@ -2,6 +2,15 @@
 import { useAuth } from '@clerk/clerk-react';
 import { authRequest } from '@/axios/authRequest';
 
+// 스웨거 스펙에 맞는 ProfileInfo 타입 정의
+export interface ProfileInfo {
+  name: string;
+  university: string;
+  major: string;
+  graduation_year: number;
+  field_of_interest: string;
+}
+
 export const useUserApi = () => {
   const { getToken } = useAuth();
 

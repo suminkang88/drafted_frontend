@@ -62,37 +62,39 @@ const Header = () => {
   }, [isLoaded, user, location.pathname, navigate]);
 
   return (
-    <div className="bg-[#F8F9FA]">
-      {/* 헤더 영역 */}
-      <header className="flex items-center justify-between px-6 py-3 bg-white shadow-sm">
-        {/* 왼쪽 로고 */}
-        <Link to="/" className="flex items-center space-x-2">
-          <img src="/icons/Drafted_logo.svg" alt="Drafted Logo" className="h-8" />
-        </Link>
+    <>
+      {/* 헤더 영역 - 그림자와 함께 독립적으로 배치 */}
+      <div className="bg-[#F8F9FA]">
+        <header className="flex items-center justify-between px-6 py-3 bg-white shadow relative z-10">
+          {/* 왼쪽 로고 */}
+          <Link to="/" className="flex items-center space-x-2">
+            <img src="/icons/Drafty_logo.svg" alt="Drafty Logo" className="h-8" />
+          </Link>
 
-        {/* 네비게이션 */}
-        <nav className="flex items-center space-x-8 text-[#00193E]">
-          {/* 비로그인 상태 */}
-          <SignedOut>
-            <SignInButton mode="redirect">
-              <button className="text-[#00193E] font-noto font-medium hover:underline">
-                로그인
-              </button>
-            </SignInButton>
-          </SignedOut>
+          {/* 네비게이션 */}
+          <nav className="flex items-center space-x-8 text-[#00193E]">
+            {/* 비로그인 상태 */}
+            <SignedOut>
+              <SignInButton mode="redirect">
+                <button className="text-[#00193E] font-noto font-medium hover:underline">
+                  로그인
+                </button>
+              </SignInButton>
+            </SignedOut>
 
-          {/* 로그인 상태 */}
-          <SignedIn>
-            <AuthenticatedNavigation />
-          </SignedIn>
-        </nav>
-      </header>
+            {/* 로그인 상태 */}
+            <SignedIn>
+              <AuthenticatedNavigation />
+            </SignedIn>
+          </nav>
+        </header>
+      </div>
 
-      {/* 헤더 아래에 각 페이지가 렌더링되는 영역 */}
-      <main className="px-0 py-0">
+      {/* 헤더 아래에 각 페이지가 렌더링되는 영역 - 별도로 배치 */}
+      <main className="bg-[#F8F9FA]">
         <Outlet />
       </main>
-    </div>
+    </>
   );
 };
 
