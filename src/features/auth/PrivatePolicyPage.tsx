@@ -7,9 +7,9 @@ const PolicyPage: React.FC = () => {
 
       <div className="whitespace-pre-wrap space-y-6">
         <section>
-          <strong>[서비스명]</strong>(이하 ‘회사’)는 이용자의 개인정보 보호를 매우 중요하게
-          생각하며, 「개인정보 보호법」 등 관련 법령을 준수합니다. 회사는 개인정보처리방침을 통하여
-          이용자의 개인정보가 어ㅞ떻게 수집, 이용, 보관, 파기되는지에 대해 안내드립니다.
+          <strong>[Drafty]</strong>(이하 ‘회사’)는 이용자의 개인정보 보호를 매우 중요하게 생각하며,
+          「개인정보 보호법」 등 관련 법령을 준수합니다. 회사는 개인정보처리방침을 통하여 이용자의
+          개인정보가 어떻게 수집, 이용, 보관, 파기되는지에 대해 안내드립니다.
         </section>
 
         <section>
@@ -184,9 +184,9 @@ const PolicyPage: React.FC = () => {
           개인정보처리방침은 시행일자 기준으로 적용되며, 내용 변경 시 서비스 내 공지사항 또는
           이메일을 통해 안내드립니다.
           <p className="mt-2">
-            <strong>공고일자:</strong> 2025년 8월 6일
+            <strong>공고일자:</strong> 2025년 8월 25일
             <br />
-            <strong>시행일자:</strong> 2025년 8월 6일
+            <strong>시행일자:</strong> 2025년 8월 25일
           </p>
         </section>
       </div>
