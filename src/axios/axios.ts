@@ -2,7 +2,8 @@
 import axios from 'axios';
 import { useAuth } from '@clerk/clerk-react';
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: 'http://127.0.0.1:8000/',
+  // baseURL: import.meta.env.VITE_API_BASE_URL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

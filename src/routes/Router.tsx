@@ -82,7 +82,7 @@ const AppRouter = () => {
             }
           />
           <Route
-            path="/resume/activity-recommend"
+            path="/resume/:id/activity-recommend"
             element={
               <SignedIn>
                 <ActivityRecommendPage />
@@ -103,23 +103,29 @@ const AppRouter = () => {
           {/* 기타 로그인 상태에서 보여줄 경로들 */}
           {/* <Route path="/testpage" element={<TestPage />} /> */}
           <Route
-            path="/resume/editor"
+            path="/resume/:id/editor"
             element={
               <SignedIn>
                 <ResumeEditPage />
               </SignedIn>
             }
           />
-          <Route path="/resume" element={
-            <SignedIn>
-              <ResumeHistoryPage />
-            </SignedIn>
-            } />
-          <Route path="/resume/:id" element={
+          <Route
+            path="/resume"
+            element={
+              <SignedIn>
+                <ResumeHistoryPage />
+              </SignedIn>
+            }
+          />
+          <Route
+            path="/resume/:id"
+            element={
               <SignedIn>
                 <ApplicationForm />
               </SignedIn>
-            } />
+            }
+          />
           <Route
             path="/archive"
             element={

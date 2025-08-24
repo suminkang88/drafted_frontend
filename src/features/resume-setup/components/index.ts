@@ -5,3 +5,4 @@ export { default as ActivitySearchModal } from './Modal/ActivitySearchModal';
 export { default as BasicInfoInputCard } from '@/features/resume-setup/components/BasicInfoInputCard';
 export { default as QuestionInputCard } from '@/features/resume-setup/components/QuestionInputCard';
 export { default as StepText } from '@/features/resume-setup/components/StepText';
+export { default as EventSelectionBlock } from '@/features/resume-setup/components/EventSelectionBlock';
