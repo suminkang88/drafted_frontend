@@ -9,7 +9,7 @@ export type ActivityRecord = {
   endDate: string;
   lastVisit: string;
   isFavorite: boolean;
-  recentEvents: string[];
+  recentEvents: { id: number; event_name: string }[];
   event_count: number;
 };
 

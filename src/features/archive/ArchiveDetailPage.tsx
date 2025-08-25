@@ -278,7 +278,7 @@ const ArchiveDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="flex gap-16 px-12 py-5 bg-[#F8F9FA]">
+    <div className="flex gap-16 px-12 py-5 bg-[#F8F9FA] m-10">
       {/* 좌측 사이드바 */}
       <div className="flex flex-col gap-4">
         <UndoButton onClick={() => navigate('/archive')} />

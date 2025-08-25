@@ -115,7 +115,15 @@ function ApplicationForm({ title, category, deadline, questions, resumeId }: App
           <GrayBgButton
             className="w-[150px] h-[40px]"
             textClassName="text-[15px]"
-            onClick={() => navigate(`/resume/${resumeId}/editor`)}
+            onClick={() =>
+              navigate(`/resume/${resumeId}/editor`, {
+                state: {
+                  title: title,
+                  category: category,
+                  deadline: deadline,
+                },
+              })
+            }
             innerText="문항 수정하기"
           />
         </div>

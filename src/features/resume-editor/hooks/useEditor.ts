@@ -54,10 +54,14 @@ export function useEditorGuideline(questionId?: number | string, options?: Opts)
 // ===================== Selected Events =====================
 export const useSuggestion = (questionId: number | string) => {
   const { getToken } = useAuth();
+  const enabled = Number(questionId) > 0;
+
   return useQuery({
-    queryKey: ['suggestion'],
+    queryKey: ['suggestion', questionId],
     queryFn: async () =>
       await authRequest(getToken, 'get', `/ai/questions/suggestions/${questionId}`),
+    enabled,
+    staleTime: 5 * 60 * 1000,
   });
 };
 

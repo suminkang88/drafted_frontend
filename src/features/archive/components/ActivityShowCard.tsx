@@ -7,7 +7,7 @@ interface ActivityShowCardProps {
   title: string;
   category: string;
   period: string;
-  recentEvents: string[] | null;
+  recentEvents: { id: number; event_name: string }[] | null;
   event_count: number;
   isSelected: boolean;
   onSelect: (id: string) => void;
@@ -57,12 +57,12 @@ const ActivityShowCard: React.FC<ActivityShowCardProps> = ({
       />
 
       {/* 상단 정보 */}
-      <div>
-        <h3 className="text-[18pt] font-bold text-[#00193E] tracking-tight leading-snug line-clamp-2">
+      <div className="flex flex-col gap-2">
+        <h3 className="text-[20px] font-bold text-[#00193E] tracking-tight leading-snug line-clamp-2">
           {title}
         </h3>
-        <p className="text-[12pt] font-semibold text-[#9B9DA1]">{category}</p>
-        <p className="text-[12pt] font-semibold text-[#9B9DA1] mb-3">{period}</p>
+        <p className="text-[15px] font-semibold text-[#9B9DA1]">{category}</p>
+        <p className="text-[15px] font-semibold text-[#9B9DA1] mb-3">{period}</p>
         <hr className="border-[#C6CBD1] mb-3" />
 
         <ul className="text-[#00193E] text-[12pt] font-medium space-y-1">

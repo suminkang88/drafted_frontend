@@ -149,8 +149,8 @@ const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
       <div onClick={() => onSelect(event.id)} className="flex flex-col gap-6 w-full">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-5">
-            <h2 className="text-[20pt] font-bold text-[#00193E]">{event.title}</h2>
-            <span className="text-[#9B9DA1] text-[12pt] font-noto whitespace-nowrap">
+            <h2 className="text-[23px] font-bold text-[#00193E]">{event.title}</h2>
+            <span className="text-[#9B9DA1] text-[15px] font-noto whitespace-nowrap">
               {`${event.startDate} ~ ${event.endDate}`}
             </span>
           </div>
@@ -172,7 +172,7 @@ const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
               </div>
               <textarea
                 placeholder={field.placeholder}
-                className="w-full h-[99px] border rounded-md p-2 text-lg focus:outline-none focus:ring-1 focus:ring-gray-500 resize-none"
+                className="w-full h-[99px] border rounded-md p-2 text-[16px] focus:outline-none focus:ring-1 focus:ring-gray-500 resize-none"
                 rows={2}
                 value={
                   field.key === 'situation'

@@ -23,7 +23,7 @@ import {
   useSuggestion,
 } from '@/features/resume-editor/hooks/useEditor';
 import { useSetupApi } from '../resume-setup/api/setupAPI';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { Question } from '@/app/types';
 
 //////////여기부터
@@ -45,10 +45,16 @@ const dummySections: ActivityDetailSection[] = [
 
 const ResumeEditPage = () => {
   const { id: resumeId } = useParams<{ id: string }>();
+  const location = useLocation();
   const { fetchApplication } = useSetupApi();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true); // 지원서 문항 로딩 상태 관리
   const [error, setError] = useState<string | null>(null);
+
+  // location.state에서 지원서 제목 전달받음
+  const passedData = location.state as {
+    title?: string;
+  } | null;
 
   // 지원서 문항 가져오기
   useEffect(() => {
@@ -63,6 +69,7 @@ const ResumeEditPage = () => {
         setError(null);
 
         const result = await fetchApplication(resumeId);
+        console.log('fetchApplication 응답:', result);
         setQuestions(result);
       } catch (err) {
         console.error('지원서 문항 로딩 실패:', err);
@@ -92,15 +99,15 @@ const ResumeEditPage = () => {
     isLoading: isLoadingSuggestions,
     isFetching: isFetchingSuggestions,
     refetch: refetchSuggestions,
-  } = useSuggestion(selectedQuestionId > 0 ? selectedQuestionId : 0);
+  } = useSuggestion(!isLoading && selectedQuestionId > 0 ? selectedQuestionId : 0);
   const suggested = selectedSuggestions?.suggestions?.[0];
 
-  // selectedQuestionId가 바뀔 때마다 useSuggestion API 재요청
+  // selectedQuestionId가 바뀔 때마다 useSuggestion API 재요청 (지원서 로딩 완료 후에만)
   useEffect(() => {
-    if (selectedQuestionId > 0) {
+    if (selectedQuestionId > 0 && !isLoading) {
       refetchSuggestions();
     }
-  }, [selectedQuestionId, refetchSuggestions]);
+  }, [selectedQuestionId, refetchSuggestions, isLoading]);
 
   const questionId = selectedQuestionId;
 
@@ -166,7 +173,7 @@ const ResumeEditPage = () => {
   return (
     <div className="flex w-full min-h-screen bg-gray-50">
       {/* 좌측 */}
-      <div className="w-[1200px] p-6 bg-white border-r border-gray-200">
+      <div className="flex-1 px-8 bg-white border-r border-gray-200">
         {isLoading ? (
           <div className="flex justify-center items-center text-center font-noto font-semibold h-screen">
             지원서를 불러오는 중입니다...
@@ -174,7 +181,7 @@ const ResumeEditPage = () => {
         ) : (
           <>
             <div className="flex justify-between items-end w-full">
-              <ApplicationTitle targetName={'멋쟁이 사자처럼 13기'} />
+              <ApplicationTitle targetName={passedData?.title || '멋쟁이 사자처럼 13기'} />
             </div>
 
             <QuestionSelectButton
@@ -227,9 +234,12 @@ const ResumeEditPage = () => {
       </div>
 
       {/* 우측 */}
-      <div className="flex flex-col p-6 flex-1">
+      <div className="flex flex-col p-6 min-w-[500px] w-[500px]">
         <div>
-          <GuideLineCard questionId={questionId} editOrRecommend="edit" />
+          <GuideLineCard
+            questionId={!isLoading && questionId > 0 ? questionId : 0}
+            editOrRecommend="edit"
+          />
         </div>
         <div className="flex flex-col justify-end h-full">
           {/* 메시지 스레드 */}

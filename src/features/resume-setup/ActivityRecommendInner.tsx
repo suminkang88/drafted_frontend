@@ -79,7 +79,7 @@ const ActivityRecommendationInner = ({ questions }: { questions: Question[] }) =
   return (
     <div className="flex">
       {/* Main Content Area */}
-      <div className="flex-1 px-8 flex flex-col">
+      <div className="flex-1 px-8 flex flex-col m-10">
         <StepText step={3} description="지원서 구조화하기" />
         <QuestionSelectButton
           questionNumbers={questions.length}
