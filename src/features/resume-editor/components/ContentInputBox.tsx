@@ -5,11 +5,17 @@ import { BlackBgButton } from '@/shared/components';
 type ContentInputBoxProps = {
   // other props
   text: string;
+  limit: number;
   setText: (text: string) => void;
   onTextDrag?: (text: string) => void;
 };
 
-export const ContentInputBox: React.FC<ContentInputBoxProps> = ({ text, setText, onTextDrag }) => {
+export const ContentInputBox: React.FC<ContentInputBoxProps> = ({
+  text,
+  limit,
+  setText,
+  onTextDrag,
+}) => {
   function onQuestionClick(): void {}
   function onCopyClick(): void {}
 
@@ -65,7 +71,7 @@ export const ContentInputBox: React.FC<ContentInputBoxProps> = ({ text, setText,
 
           {/* 글자 수 */}
           <div className="absolute bottom-[35px] right-[27px] text-[#9b9da0] text-sm font-semibold font-noto">
-            {text.length} / 700
+            {text.length} / {limit}
           </div>
         </div>
       </div>

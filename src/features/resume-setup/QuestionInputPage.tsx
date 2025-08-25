@@ -138,7 +138,7 @@ const QuestionInputPage = () => {
       sessionStorage.removeItem('tempApplication_basicInfo');
 
       // 5. ActivityRecommendPage로 이동 (백엔드 관리 시작)
-      navigate('/resume/activity-recommend');
+      navigate(`/resume/${result.id}/activity-recommend`);
     } catch (error: any) {
       console.error('지원서 생성 실패:', error);
 
@@ -188,7 +188,6 @@ const QuestionInputPage = () => {
           </div>
         ))}
       </div>
-
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
