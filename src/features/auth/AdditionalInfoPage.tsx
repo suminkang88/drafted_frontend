@@ -132,12 +132,6 @@ const AdditionalInfoPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center">
-      {/* Drafty 로고 */}
-      <div className="mb-10">
-        <div className="bg-[#D9D9D9] w-[300px] h-[60px] flex items-center justify-center text-[#00193E] text-base font-bold rounded">
-          Drafty 로고 삽입
-        </div>
-      </div>
 
       {/* 입력 카드 */}
       <div className="bg-[#E4E8EE] w-[600px] p-8 rounded-[10px] space-y-6">
