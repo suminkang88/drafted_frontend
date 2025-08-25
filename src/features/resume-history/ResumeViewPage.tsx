@@ -146,7 +146,7 @@ function ApplicationForm({ title, category, deadline, questions, resumeId }: App
               <div className="w-full h-[269px] relative">
                 <textarea
                   className="w-full h-full pl-11 pr-[44px] pt-[14px] pb-[14px] bg-white rounded-[10px] border border-[#9b9da0] resize-none text-black text-lg font-normal font-noto leading-[30px] focus:outline-none focus:ring-2 focus:ring-[#00193e] focus:border-transparent"
-                  placeholder="작성된 내용이 없습니다. '문항 수정하기' 에서 작성할 수 있습니다. "
+                  placeholder={question.content}
                   value={question.answer}
                   readOnly={true}
                 />

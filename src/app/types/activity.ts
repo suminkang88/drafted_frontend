@@ -5,7 +5,7 @@ export interface Activity {
   title: string;
   category: string;
   startDate: string;
-  endDate: string;
+  endDate?: string; //없어도 되는 항목
   role?: string;
   description?: string;
   keywords?: string;

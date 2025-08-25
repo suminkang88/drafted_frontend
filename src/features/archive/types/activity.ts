@@ -18,8 +18,8 @@ export type Activity = {
   id: number;
   title: string;
   category: string;
-  startDate: string;
-  endDate: string;
+  start_date: string;
+  end_date: string;
   role: string;
   description: string;
   keywords: string;
