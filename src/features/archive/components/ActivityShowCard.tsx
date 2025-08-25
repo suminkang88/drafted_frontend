@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import GrayBgButton from '@/shared/components/GrayBgButton';
 
@@ -12,6 +12,7 @@ interface ActivityShowCardProps {
   isSelected: boolean;
   onSelect: (id: string) => void;
   isFavorite?: boolean;
+  onToggleFavorite?: (id: number, isFavorite: boolean) => void;
 }
 
 const ActivityShowCard: React.FC<ActivityShowCardProps> = ({
@@ -24,17 +25,17 @@ const ActivityShowCard: React.FC<ActivityShowCardProps> = ({
   isFavorite = false,
   isSelected = false,
   onSelect,
+  onToggleFavorite,
 }) => {
   const navigate = useNavigate();
-  const [favorite, setFavorite] = useState(isFavorite);
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
-    e.stopPropagation(); // ✅ 부모 카드 클릭 방지
-    setFavorite((prev) => !prev);
+    e.stopPropagation();
+    onToggleFavorite?.(id, isFavorite); // ✅ 부모에 현재 값 전달 → API 호출
   };
 
   const handleView = (e: React.MouseEvent) => {
-    e.stopPropagation(); // ✅ 부모 카드 클릭 방지
+    e.stopPropagation();
     navigate(`/archive/${id}`);
   };
 
@@ -50,9 +51,9 @@ const ActivityShowCard: React.FC<ActivityShowCardProps> = ({
     >
       {/* 즐겨찾기 아이콘 */}
       <img
-        src={favorite ? '/icons/star_filled.svg' : '/icons/star_empty.svg'}
+        src={isFavorite ? '/icons/star_filled.svg' : '/icons/star_empty.svg'}
         alt="즐겨찾기"
-        onClick={handleToggleFavorite} // ✅ stopPropagation 적용
+        onClick={handleToggleFavorite}
         className="absolute top-4 right-4 w-5 h-5 cursor-pointer transition-opacity hover:opacity-80"
       />
 
@@ -83,8 +84,6 @@ const ActivityShowCard: React.FC<ActivityShowCardProps> = ({
         <span className="text-[11pt] font-semibold text-[#9B9DA1]">
           외 {event_count}개의 이벤트
         </span>
-
-        {/* 보기 버튼 클릭 시에도 선택 방지 */}
         <div onClick={handleView}>
           <GrayBgButton />
         </div>

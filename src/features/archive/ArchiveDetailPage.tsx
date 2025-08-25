@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Event, CreateEventInput } from '@/app/types';
 import { useActivity, usePartialUpdateActivity, useCreateActivity } from './hooks/useActivities';
 import { useUpdateEvent, useEvents, useCreateEvent, useDeleteEvent } from './hooks/useEvents';
+import { useQueryClient } from '@tanstack/react-query';
 
 const categories = ['공모전', '대외활동', '동아리', '연구', '학회', '인턴십'];
 
@@ -50,23 +51,28 @@ const KeywordInput: React.FC<KeywordProps> = ({ keywords, onAdd, onRemove }) => 
   );
 };
 
-// ✅ payload 정리 유틸 함수 (빈 문자열/undefined/null 제거)
+// ✅ payload 정리
 const cleanPayload = (data: Record<string, any>): Record<string, any> => {
   const cleaned = { ...data };
   Object.keys(cleaned).forEach((key) => {
     const val = cleaned[key];
     if (val === '' || val === undefined) {
-      if (key === 'endDate') {
-        cleaned[key] = '9999-12-31'; // ✅ 끝나는 날짜 없음 → 가짜 미래 날짜 (왜냐면 백엔드가 null못받음.. null로 덮어씌울 수가 없음)
+      if (key === 'endDate' || key === 'end_date') {
+        cleaned[key] = null;
       } else {
-        delete cleaned[key]; // ✅ 나머지는 그냥 제거
+        delete cleaned[key];
       }
     }
   });
   return cleaned;
 };
 
-// ✅ 날짜 정규화 유틸
+// ✅ 날짜 포맷 함수
+const toDateOnly = (value?: string | null) => {
+  if (!value) return '';
+  return value.includes('T') ? value.split('T')[0] : value;
+};
+
 const normalizeDate = (value?: string) => {
   if (!value) return undefined;
   return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : undefined;
@@ -74,6 +80,7 @@ const normalizeDate = (value?: string) => {
 
 const ArchiveDetailPage: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { id } = useParams<{ id: string }>();
   const isNew = id === 'new';
 
@@ -85,6 +92,8 @@ const ArchiveDetailPage: React.FC = () => {
   const { mutate: deleteEvent } = useDeleteEvent(!isNew ? id! : '');
   const { mutate: updateEvent } = useUpdateEvent(!isNew ? id! : '');
 
+  const [isEditing, setIsEditing] = useState(false);
+
   const [keywords, setKeywords] = useState<string[]>([]);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
@@ -93,28 +102,29 @@ const ArchiveDetailPage: React.FC = () => {
   const [role, setRole] = useState('');
   const [description, setDescription] = useState('');
 
+  // ✅ 서버 응답 들어오면 state 세팅
   useEffect(() => {
     if (activity && !isNew) {
-      setTitle(activity.title || '');
+      setTitle(activity.title || activity.title || '');
       setCategory(activity.category || '');
-      setStartDate(activity.startDate || '');
-      setEndDate(activity.endDate || '');
+      // ✅ snake_case 매핑
+      setStartDate(activity.startDate);
+      setEndDate(activity.endDate ? activity.endDate : '');
       setRole(activity.role || '');
       setDescription(activity.description || '');
 
-      if (typeof activity.keywords === 'string') {
-        const arr = activity.keywords
+      const rawKeywords = activity.keywords;
+      if (typeof rawKeywords === 'string') {
+        const arr = rawKeywords
+          .replace(/^{|}$/g, '')
           .split(',')
-          .map((kw: string) =>
-            kw
-              .trim()
-              .replace(/^[{\[]\s*|\s*[}\]]$/g, '')
-              .replace(/^['"]|['"]$/g, '')
-          )
+          .map((kw: string) => kw.trim().replace(/^['"]|['"]$/g, ''))
           .filter(Boolean);
         setKeywords(arr);
-      } else {
-        setKeywords([]);
+      } else if (Array.isArray(rawKeywords)) {
+        setKeywords(
+          (rawKeywords as string[]).filter((kw) => typeof kw === 'string' && kw.trim() !== '')
+        );
       }
     }
   }, [activity, isNew]);
@@ -139,50 +149,44 @@ const ArchiveDetailPage: React.FC = () => {
       return;
     }
 
-    const payload: CreateEventInput = cleanPayload({
+    const payload = cleanPayload({
       title: eventData.title.trim(),
       situation: eventData.situation?.trim(),
       task: eventData.task?.trim(),
       action: eventData.action?.trim(),
       result: eventData.result?.trim(),
-      startDate: normalizeDate(eventData.startDate),
-      endDate: normalizeDate(eventData.endDate), // ✅ 선택 안 하면 undefined
+      startDate: normalizeDate(toDateOnly(eventData.startDate)),
+      endDate: normalizeDate(toDateOnly(eventData.endDate)),
     }) as CreateEventInput;
 
-    console.log('📦 새 이벤트 생성 payload:', payload);
-
     createEvent(payload, {
-      onSuccess: (newEvent) => {
-        console.log('✅ 새 이벤트가 생성되었습니다:', newEvent);
+      onSuccess: () => {
         setNewEventId(null);
+        queryClient.invalidateQueries({ queryKey: ['activity', id] });
       },
-      onError: (error) => {
-        console.error('❌ 이벤트 생성 중 오류:', error);
+      onError: () => {
         alert('이벤트 생성 중 오류가 발생했습니다.');
         setNewEventId(null);
       },
     });
   };
 
-  // ✅ 기존 이벤트 업데이트
+  // ✅ 이벤트 업데이트
   const handleUpdateEvent = (id: string, data: Partial<Event>) => {
     const finalPayload = cleanPayload({
       ...data,
-      startDate: normalizeDate(data.startDate),
-      endDate: normalizeDate(data.endDate),
+      start_date: normalizeDate(toDateOnly(data.startDate)),
+      end_date: normalizeDate(toDateOnly(data.endDate)),
     });
-
-    console.log('📦 이벤트 업데이트 payload:', finalPayload);
 
     updateEvent(
       { id, data: finalPayload },
       {
         onSuccess: () => {
-          console.log('✅ 이벤트 업데이트 성공!');
           alert('이벤트가 수정되었습니다.');
+          queryClient.invalidateQueries({ queryKey: ['activity', id] });
         },
-        onError: (error) => {
-          console.error('❌ 이벤트 업데이트 실패:', error);
+        onError: () => {
           alert('이벤트 수정 중 오류가 발생했습니다.');
         },
       }
@@ -195,12 +199,11 @@ const ArchiveDetailPage: React.FC = () => {
 
     deleteEvent(selectedId, {
       onSuccess: () => {
-        console.log('✅ 이벤트 삭제 완료');
         setSelectedId(null);
         alert('이벤트가 삭제되었습니다.');
+        queryClient.invalidateQueries({ queryKey: ['activity', id] });
       },
-      onError: (error) => {
-        console.error('❌ 이벤트 삭제 실패:', error);
+      onError: () => {
         alert('이벤트 삭제 중 오류가 발생했습니다.');
       },
     });
@@ -216,34 +219,24 @@ const ArchiveDetailPage: React.FC = () => {
       return;
     }
 
-    const toCurlyCsv = (arr: string[]) =>
-      arr.length
-        ? `{${arr
-            .map((s) => s.trim())
-            .filter(Boolean)
-            .join(',')}}`
-        : '{}';
-
     const payload = cleanPayload({
       title,
       category,
-      startDate: normalizeDate(startDate),
-      endDate: normalizeDate(endDate), // ✅ 선택 안 하면 undefined
+      start_date: normalizeDate(startDate),
+      end_date: normalizeDate(endDate),
       role,
       description,
-      keywords: toCurlyCsv(keywords),
+      keywords,
     });
-
-    console.log('📦 전송할 payload:', payload);
 
     if (isNew) {
       createActivity(payload, {
         onSuccess: (newActivity) => {
           alert('새 활동이 생성되었습니다.');
+          queryClient.invalidateQueries({ queryKey: ['activity', newActivity.id] });
           navigate(`/archive/${newActivity.id}`);
         },
-        onError: (error) => {
-          console.error('❌ 활동 생성 중 오류', error);
+        onError: () => {
           alert('생성 중 오류가 발생했습니다.');
         },
       });
@@ -252,16 +245,22 @@ const ArchiveDetailPage: React.FC = () => {
         { id: id!, data: payload },
         {
           onSuccess: () => {
-            console.log('✅ 활동 업데이트 성공!');
             alert('성공적으로 저장되었습니다!');
+            queryClient.invalidateQueries({ queryKey: ['activity', id] });
           },
-          onError: (error: any) => {
-            console.error('❌ 저장 중 오류', error);
+          onError: () => {
             alert('저장 중 오류가 발생했습니다.');
           },
         }
       );
     }
+  };
+
+  const handleToggleEdit = () => {
+    if (isEditing) {
+      handleSave();
+    }
+    setIsEditing((prev) => !prev);
   };
 
   return (
@@ -288,90 +287,134 @@ const ArchiveDetailPage: React.FC = () => {
           <>
             {/* 제목 및 활동 기본 정보 */}
             <div className="flex justify-between items-center">
-              <input
-                type="text"
-                className="text-[30px] font-extrabold text-[#00193E] bg-[#F8F9FA] outline-none"
-                value={title ?? '새 활동'}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="활동 제목을 입력하세요"
-              />
+              {isEditing ? (
+                <input
+                  type="text"
+                  className="text-[30pt] font-semibold text-[#00193E] bg-[#F8F9FA] outline-none"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="활동 제목을 입력하세요"
+                />
+              ) : (
+                <h1 className="text-[30pt] font-semibold text-[#00193E]">{title || '새 활동'}</h1>
+              )}
               <button
-                onClick={handleSave}
-                className="text-sm bg-[#00193E] text-white px-4 py-1 rounded-md hover:bg-[#003366]"
+                onClick={handleToggleEdit}
+                className="text-sm bg-[#00193E] text-white px-4 py-1 rounded-md hover:bg-[#003366] transition"
               >
-                저장
+                {isEditing ? '저장' : '수정'}
               </button>
             </div>
 
             {/* 활동 정보 */}
             <div className="flex flex-col gap-4 text-[13pt] text-[#00193E]">
+              {/* 카테고리 */}
               <div className="flex items-center gap-4">
                 <p className="w-[150px] text-[#9B9DA1] font-semibold">카테고리</p>
-                <select
-                  className="flex-1 w-[100px] bg-[#F8F9FA] outline-none p-2 rounded"
-                  onChange={(e) => setCategory(e.target.value)}
-                  value={category}
-                >
-                  <option key="default" value="" disabled className="text-[#9B9DA1]">
-                    선택하세요
-                  </option>
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
+                {isEditing ? (
+                  <select
+                    className="flex-1 w-[100px] bg-[#F8F9FA] outline-none p-2 rounded"
+                    onChange={(e) => setCategory(e.target.value)}
+                    value={category}
+                  >
+                    <option value="" disabled>
+                      선택하세요
                     </option>
-                  ))}
-                </select>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <span>{category || '-'}</span>
+                )}
               </div>
 
+              {/* 활동 기간 */}
               <div className="flex items-center gap-4">
                 <p className="w-[150px] text-[#9B9DA1] font-semibold">활동 기간</p>
-                <input
-                  type="date"
-                  className="w-[150px] bg-[#F8F9FA] outline-none"
-                  value={startDate ?? ''}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
-                <span>~</span>
-                <input
-                  type="date"
-                  className="w-[150px] bg-[#F8F9FA] outline-none"
-                  value={endDate ?? ''}
-                  onChange={(e) => setEndDate(e.target.value)}
-                />
+                {isEditing ? (
+                  <>
+                    <input
+                      type="date"
+                      className="w-[150px] bg-[#F8F9FA] outline-none"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                    />
+                    <span>~</span>
+                    <input
+                      type="date"
+                      className="w-[150px] bg-[#F8F9FA] outline-none"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                    />
+                  </>
+                ) : (
+                  <span>
+                    {startDate ? startDate : ' '} ~ {endDate ? endDate : ' '}
+                  </span>
+                )}
               </div>
 
+              {/* 역할 */}
               <div className="flex items-center gap-4">
                 <p className="w-[150px] text-[#9B9DA1] font-semibold">역할</p>
-                <input
-                  className="flex-1 bg-[#F8F9FA] outline-none"
-                  placeholder="예: 편집장"
-                  onChange={(e) => setRole(e.target.value)}
-                  value={role ?? ''}
-                />
+                {isEditing ? (
+                  <input
+                    className="flex-1 bg-[#F8F9FA] outline-none"
+                    placeholder="예: 편집장"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                  />
+                ) : (
+                  <span>{role || '-'}</span>
+                )}
               </div>
 
+              {/* 설명 */}
               <div className="flex items-center gap-4">
                 <p className="w-[150px] text-[#9B9DA1] font-semibold">활동 설명</p>
-                <input
-                  className="flex-1 bg-[#F8F9FA] outline-none"
-                  placeholder="예: 리더십, 사회문화 분석..."
-                  onChange={(e) => setDescription(e.target.value)}
-                  value={description ?? ''}
-                />
+                {isEditing ? (
+                  <input
+                    className="flex-1 bg-[#F8F9FA] outline-none"
+                    placeholder="예: 리더십, 사회문화 분석..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                ) : (
+                  <span>{description || '-'}</span>
+                )}
               </div>
 
+              {/* 키워드 */}
               <div className="flex items-center gap-4">
                 <p className="w-[150px] text-[#9B9DA1] font-semibold">활동 키워드</p>
-                <KeywordInput
-                  keywords={keywords}
-                  onAdd={handleAddKeyword}
-                  onRemove={handleRemoveKeyword}
-                />
+                {isEditing ? (
+                  <KeywordInput
+                    keywords={keywords}
+                    onAdd={handleAddKeyword}
+                    onRemove={handleRemoveKeyword}
+                  />
+                ) : (
+                  <div className="flex gap-2">
+                    {keywords.length > 0 ? (
+                      keywords.map((kw, i) => (
+                        <span key={i} className="px-2 py-1 bg-[#00193E] text-white text-sm rounded">
+                          #{kw}
+                        </span>
+                      ))
+                    ) : (
+                      <span>-</span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
             <hr className="border-[#9B9DA1] border-t-[1px] mt-6" />
 
+            {/* 이벤트 카드 영역 */}
             <DeleteOrAdd
               className="flex sticky top-0 justify-end items-center bg-[#F8F9FA] p-5"
               onDeleteClick={handleDeleteEvent}
