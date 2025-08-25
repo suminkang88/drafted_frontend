@@ -15,12 +15,17 @@ import {
   GuideLineCard,
   QuestionSelectButton,
   QuestionShowCard,
+  SelectedActivityCard,
 } from '@/shared/components';
 import {
   useCreateChatSession,
   useChatMessages,
   useSendChatMessage,
 } from '@/features/resume-editor/hooks/useEditor';
+import { useSetupApi } from '../resume-setup/api/setupAPI';
+import { useParams, useLocation } from 'react-router-dom';
+import { Question } from '@/app/types';
+
 
 interface ActivityDetailSection {
   title: string;
@@ -37,14 +42,72 @@ const dummySections: ActivityDetailSection[] = [
 ];
 
 const ResumeEditPage = () => {
-  const [text, setText] = useState('');
-  const { status, lastSaved } = useDebounceSave(text, 1000);
+  const { id: resumeId } = useParams<{ id: string }>();
+  const location = useLocation();
+  const { fetchApplication } = useSetupApi();
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [isLoading, setIsLoading] = useState(true); // 지원서 문항 로딩 상태 관리
+  const [error, setError] = useState<string | null>(null);
 
+  // location.state에서 지원서 제목 전달받음
+  const passedData = location.state as {
+    title?: string;
+  } | null;
+
+  // 지원서 문항 가져오기
+  useEffect(() => {
+    const loadApplicationQuestions = async () => {
+      if (!resumeId) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const result = await fetchApplication(resumeId);
+        console.log('fetchApplication 응답:', result);
+        setQuestions(result);
+      } catch (err) {
+        console.error('지원서 문항 로딩 실패:', err);
+        setError('지원서 문항을 불러오는데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadApplicationQuestions();
+  }, [resumeId]);
+
+  const [texts, setTexts] = useState<{ [key: number]: string }>({});
+  const [selectedQuestionTab, setSelectedQuestionTab] = useState<number>(0);
   const [dragText, setDragText] = useState('');
   const [chatText, setChatText] = useState('');
   const [sessionId, setSessionId] = useState<number | string | null>(null);
 
-  const questionId = 4;
+  // 선택된 질문의 questionId 찾기
+  const selectedQuestion = questions.find(
+    (q) => parseInt(q.questionOrder) === selectedQuestionTab + 1
+  );
+  const selectedQuestionId = selectedQuestion?.questionId || 0;
+
+  const {
+    data: selectedSuggestions,
+    isLoading: isLoadingSuggestions,
+    isFetching: isFetchingSuggestions,
+    refetch: refetchSuggestions,
+  } = useSuggestion(!isLoading && selectedQuestionId > 0 ? selectedQuestionId : 0);
+  const suggested = selectedSuggestions?.suggestions?.[0];
+
+  // selectedQuestionId가 바뀔 때마다 useSuggestion API 재요청 (지원서 로딩 완료 후에만)
+  useEffect(() => {
+    if (selectedQuestionId > 0 && !isLoading) {
+      refetchSuggestions();
+    }
+  }, [selectedQuestionId, refetchSuggestions, isLoading]);
+
+  const questionId = selectedQuestionId;
 
   const createSession = useCreateChatSession();
   const msgsQuery = useChatMessages(sessionId ?? undefined);
@@ -105,11 +168,16 @@ const ResumeEditPage = () => {
   return (
     <div className="flex w-full min-h-screen bg-gray-50">
       {/* 좌측 */}
-      <div className="w-[1200px] p-6 bg-white border-r border-gray-200">
-        <div className="flex justify-between items-end w-full">
-          <ApplicationTitle targetName={'멋쟁이 사자처럼 13기'} />
-          <AutoSaved status={status} lastSaved={lastSaved} />
-        </div>
+      <div className="flex-1 px-8 bg-white border-r border-gray-200">
+        {isLoading ? (
+          <div className="flex justify-center items-center text-center font-noto font-semibold h-screen">
+            지원서를 불러오는 중입니다...
+          </div>
+        ) : (
+          <>
+            <div className="flex justify-between items-end w-full">
+              <ApplicationTitle targetName={passedData?.title || '멋쟁이 사자처럼 13기'} />
+            </div>
 
         <QuestionSelectButton
           className="flex justify-end"
@@ -129,13 +197,53 @@ const ResumeEditPage = () => {
           />
         </div>
 
-        <ContentInputBox text={text} setText={setText} onTextDrag={setDragText} />
+                if (isSelected) {
+                  return (
+                    <div key={question.questionId} className="flex flex-col gap-4 mb-4">
+                      <QuestionShowCard
+                        question={question.content}
+                        maximumTextLength={question.limit}
+                      />
+                      {isLoadingSuggestions || isFetchingSuggestions ? (
+                        <div className="flex justify-center items-center h-full">
+                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-4">
+                          <SelectedActivityCard
+                            event={suggested?.event_name || '이벤트 없음'}
+                            activity={suggested?.activity || '활동 없음'}
+                            showClose={false}
+                          />
+                          <ContentInputBox
+                            text={texts[question.questionId] || ''}
+                            limit={question.limit}
+                            setText={(newText) =>
+                              setTexts((prev) => ({ ...prev, [question.questionId]: newText }))
+                            }
+                            onTextDrag={setDragText}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+              })}
+            </div>
+          </>
+        )}
       </div>
 
       {/* 우측 */}
-      <div className="flex flex-col p-6 flex-1">
+      <div className="flex flex-col p-6 min-w-[500px] w-[500px]">
         <div>
-          <GuideLineCard questionId={questionId} editOrRecommend="edit" />
+          {isLoading ? (
+            <div className="flex flex-col justify-center items-center py-12 gap-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#00193E]"></div>
+            </div>
+          ) : (
+            <GuideLineCard questionId={questionId > 0 ? questionId : 0} editOrRecommend="edit" />
+          )}
         </div>
         <div className="flex flex-col justify-end h-full">
           {/* 메시지 스레드 */}

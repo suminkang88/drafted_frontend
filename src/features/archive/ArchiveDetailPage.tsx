@@ -264,7 +264,8 @@ const ArchiveDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="flex gap-16 px-12 py-5 bg-[#F8F9FA]">
+    <div className="flex gap-16 px-12 py-5 bg-[#F8F9FA] m-10">
+      {/* 좌측 사이드바 */}
       <div className="flex flex-col gap-4">
         <UndoButton onClick={() => navigate('/archive')} />
         <SideBar title="목차" items={events ?? []} />
@@ -432,7 +433,14 @@ const ArchiveDetailPage: React.FC = () => {
                 />
               )}
 
-              {events && events.length > 0 ? (
+              {eventsLoading ? (
+                <div className="flex flex-col justify-center items-center py-12 gap-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#00193E]"></div>
+                  <span className="text-[#9B9DA1] font-semibold">
+                    이벤트 목록을 로딩 중입니다...
+                  </span>
+                </div>
+              ) : events && events.length > 0 ? (
                 events.map((event: Event) => (
                   <EventCard
                     key={event.id}

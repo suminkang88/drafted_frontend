@@ -236,7 +236,7 @@ const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
               </div>
               <textarea
                 placeholder={field.placeholder}
-                className="w-full h-[99px] border rounded-md p-2 text-lg focus:outline-none focus:ring-1 focus:ring-gray-500 resize-none"
+                className="w-full h-[99px] border rounded-md p-2 text-[16px] focus:outline-none focus:ring-1 focus:ring-gray-500 resize-none"
                 rows={2}
                 value={
                   isEditing

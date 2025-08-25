@@ -20,6 +20,7 @@ const GrayBgButton: React.FC<GrayBgButtonProps> = ({
 		h-7 
 		p-[5px] 
 		bg-[#e4e8ee] 
+		hover:bg-[#d1d5db]
 		rounded-[10px] 
 		justify-center 
 		items-center 

@@ -1,5 +1,6 @@
 import { BlackBgButton, GrayBgButton } from '@/shared/components';
 import React from 'react';
+import { useQuestionsContext } from '../QuestionsContext';
 
 interface Event {
   id: number;
@@ -12,15 +13,24 @@ interface Event {
 
 interface EventRecommendationCardProps {
   event: Event;
+  questionId?: number; // 현재 문항 ID 추가
   onView?: (eventId: number) => void;
   onSelect?: (eventId: number) => void;
 }
 
 const EventRecommendationCard: React.FC<EventRecommendationCardProps> = ({
   event,
+  questionId,
   onView = () => {},
   onSelect = () => {},
 }) => {
+  const { questionsState } = useQuestionsContext();
+
+  // 현재 문항에서 이 이벤트가 선택되었는지 확인
+  const isSelectedInCurrentQuestion = questionId
+    ? questionsState[questionId]?.status === 'selected' &&
+      questionsState[questionId]?.event?.id === event.id
+    : false;
   return (
     <>
       <div
@@ -66,7 +76,7 @@ const EventRecommendationCard: React.FC<EventRecommendationCardProps> = ({
           />
 
           {/* Select Button */}
-          {event.isSelected ? (
+          {isSelectedInCurrentQuestion ? (
             <BlackBgButton
               onClick={() => onSelect(event.id)}
               className="w-16 h-7"
@@ -84,7 +94,7 @@ const EventRecommendationCard: React.FC<EventRecommendationCardProps> = ({
         </div>
 
         {/* ⬇ 선택되었을 경우 하단 메시지 표시 */}
-        {event.isSelected && (
+        {isSelectedInCurrentQuestion && (
           <p className="absolute bottom-3 left-4 text-xs text-[#9b9da0] font-noto">
             이미 선택된 활동입니다
           </p>
