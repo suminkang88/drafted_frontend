@@ -19,12 +19,19 @@ export const fetchEditorGuideline = async (
   getToken: () => Promise<string | null | undefined>,
   questionId: number | string
 ): Promise<EditorGuideline> => {
-  const res = await authRequest<EditorGuideline>(
-    toSafe(getToken),
-    'get',
-    `/applications/questions/${questionId}/editor-guideline/`
-  );
-  return res; // ✅ authRequest가 이미 data를 반환
+  console.log('🔍 fetchEditorGuideline API 호출 - questionId:', questionId);
+  try {
+    const res = await authRequest<EditorGuideline>(
+      toSafe(getToken),
+      'get',
+      `/applications/questions/${questionId}/editor-guideline/`
+    );
+    console.log('✅ fetchEditorGuideline 성공:', res);
+    return res; // ✅ authRequest가 이미 data를 반환
+  } catch (error) {
+    console.error('❌ fetchEditorGuideline 실패:', error);
+    throw error;
+  }
 };
 
 /** (POST) /chat/sessions/ : 채팅 세션 생성 */

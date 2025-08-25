@@ -18,6 +18,8 @@ const GuideLineCard: React.FC<GuideLineCardProps> = ({
   text = '가이드라인이 없습니다.',
   className,
 }) => {
+  console.log('🔍 GuideLineCard - questionId:', questionId, 'editOrRecommend:', editOrRecommend);
+
   // editOrRecommend에 따라 필요한 훅만 호출
   const editResult = editOrRecommend === 'edit' ? useEditorGuideline(questionId) : null;
   const recommendResult =
