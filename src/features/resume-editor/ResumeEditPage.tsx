@@ -1,5 +1,5 @@
 // src/features/resume-editor/ResumeEditPage.tsx
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   AIResponseCard,
   AutoSaved,
@@ -21,25 +21,11 @@ import {
   useCreateChatSession,
   useChatMessages,
   useSendChatMessage,
+  useSuggestion,
 } from '@/features/resume-editor/hooks/useEditor';
 import { useSetupApi } from '../resume-setup/api/setupAPI';
 import { useParams, useLocation } from 'react-router-dom';
 import { Question } from '@/app/types';
-
-
-interface ActivityDetailSection {
-  title: string;
-  content: string;
-}
-
-const dummySections: ActivityDetailSection[] = [
-  { title: '활동 요약', content: '연말부터 8주간 서비스기획 직무 관련 국비지원 프로그램 수료...' },
-  {
-    title: '나의 활동 및 개선',
-    content: '‘지그재그’ 커머스 플랫폼의 커뮤니티 기능을 개선하는 파일럿 프로젝트...',
-  },
-  { title: '결과 및 성과', content: '긍정적인 피드백, PM 직무에 대한 이해도 제고...' },
-];
 
 const ResumeEditPage = () => {
   const { id: resumeId } = useParams<{ id: string }>();
@@ -88,7 +74,7 @@ const ResumeEditPage = () => {
 
   // 선택된 질문의 questionId 찾기
   const selectedQuestion = questions.find(
-    (q) => parseInt(q.questionOrder) === selectedQuestionTab + 1
+    (q) => parseInt(q.questionOrder as string) === selectedQuestionTab + 1
   );
   const selectedQuestionId = selectedQuestion?.questionId || 0;
 
@@ -137,8 +123,7 @@ const ResumeEditPage = () => {
       });
       console.log(created.session_id);
 
-      // created가 { data: {...} } 인 경우 처리
-      sid = created?.session_id ?? created?.data?.session_id;
+      sid = created?.session_id; // ?? created?.data?.session_id;
 
       if (!sid) {
         console.error('세션 생성 응답에 session_id가 없습니다.', created);
@@ -156,13 +141,17 @@ const ResumeEditPage = () => {
       sessionId: sid!,
       payload: {
         message: combinedMessage,
-        personal_statement: text,
+        personal_statement: texts[selectedQuestionId] || '',
         question_id: Number(questionId),
       },
     });
 
     setDragText('');
     setChatText('');
+  };
+
+  const handleQuestionTabClick = (tabNumber: number) => {
+    setSelectedQuestionTab(tabNumber);
   };
 
   return (
@@ -179,23 +168,18 @@ const ResumeEditPage = () => {
               <ApplicationTitle targetName={passedData?.title || '멋쟁이 사자처럼 13기'} />
             </div>
 
-        <QuestionSelectButton
-          className="flex justify-end"
-          questionNumbers={4}
-          extraLabel="전체 보기"
-        />
+            <QuestionSelectButton
+              className="flex justify-end bg-white"
+              questionNumbers={questions.length}
+              extraLabel="전체 보기"
+              selectedTab={selectedQuestionTab}
+              onClick={handleQuestionTabClick}
+            />
 
-        <div className="mb-4">
-          <QuestionShowCard question="멋쟁이사자처럼 13기에 지원한 동기를 적어주세요" />
-        </div>
-
-        <div className="mb-4">
-          <ToggledSelectedActivityCard
-            event="서비스기획 동아리"
-            activity="프로젝트 기획 및 실행"
-            sections={dummySections}
-          />
-        </div>
+            <div className="mb-4">
+              {questions.map((question) => {
+                const isSelected =
+                  parseInt(question.questionOrder as string) === selectedQuestionTab + 1;
 
                 if (isSelected) {
                   return (
@@ -255,8 +239,7 @@ const ResumeEditPage = () => {
                 <UserResponseCard key={`srv-${i}`} content={m.content} />
               )
             )}
-            {/* 닫기 시 dragText 초기화 */}
-            {dragText && <DragContentCard content={dragText} onClose={() => setDragText('')} />}
+            {dragText && <DragContentCard content={dragText} />}
           </div>
 
           {/* 입력창 */}

@@ -7,9 +7,15 @@ type ContentInputBoxProps = {
   text: string;
   setText: (text: string) => void;
   onTextDrag?: (text: string) => void;
+  limit: number;
 };
 
-export const ContentInputBox: React.FC<ContentInputBoxProps> = ({ text, setText, onTextDrag }) => {
+export const ContentInputBox: React.FC<ContentInputBoxProps> = ({
+  text,
+  setText,
+  onTextDrag,
+  limit,
+}) => {
   function onQuestionClick(): void {}
   function onCopyClick(): void {}
 
@@ -65,7 +71,7 @@ export const ContentInputBox: React.FC<ContentInputBoxProps> = ({ text, setText,
 
           {/* 글자 수 */}
           <div className="absolute bottom-[35px] right-[27px] text-[#9b9da0] text-sm font-semibold font-noto">
-            {text.length} / 700
+            {text.length} / {limit}
           </div>
         </div>
       </div>
