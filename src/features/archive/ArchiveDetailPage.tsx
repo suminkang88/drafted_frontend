@@ -155,8 +155,8 @@ const ArchiveDetailPage: React.FC = () => {
       task: eventData.task?.trim(),
       action: eventData.action?.trim(),
       result: eventData.result?.trim(),
-      start_date: normalizeDate(toDateOnly(eventData.startDate)),
-      end_date: normalizeDate(toDateOnly(eventData.endDate)),
+      startDate: normalizeDate(toDateOnly(eventData.startDate)),
+      endDate: normalizeDate(toDateOnly(eventData.endDate)),
     }) as CreateEventInput;
 
     createEvent(payload, {
