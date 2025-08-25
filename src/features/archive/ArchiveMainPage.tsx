@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { ProfileCard, SideBar, ActivityShowCard } from '@/features/archive/components';
 import DeleteOrAdd from '@/shared/components/DeleteOrAdd';
 import SortingBar from '@/shared/components/SortingBar';
-import { useActivities, useDeleteActivity } from './hooks/useActivities';
+import { useActivities, useDeleteActivity, usePartialUpdateActivity } from './hooks/useActivities';
 import type { ActivityRecord } from './types/activity';
-
 import { useUserProfile } from './hooks/useUserProfile';
 import { useUser } from '@clerk/clerk-react';
 
@@ -16,16 +15,29 @@ const formatDate = (value?: string | null) => {
 
 const ArchiveMainPage: React.FC = () => {
   const { user } = useUser();
-
   const { data, isLoading, error } = useActivities();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState('진행 중');
   const [isDeleteMode, setIsDeleteMode] = useState(false);
 
   const { mutate: deleteActivity } = useDeleteActivity();
+  const { mutate: updateActivity } = usePartialUpdateActivity();
   const navigate = useNavigate();
 
-  // ✅ 유저 프로필 API 호출
+  // ✅ 즐겨찾기 토글 핸들러
+  const handleToggleFavorite = (id: number, current: boolean) => {
+    updateActivity(
+      { id, data: { isFavorite: !current } },
+      {
+        onError: (err) => {
+          console.error('즐겨찾기 토글 실패:', err);
+          alert('즐겨찾기 변경에 실패했습니다.');
+        },
+      }
+    );
+  };
+
+  // ✅ 유저 프로필 API
   const userId = user?.id;
   const {
     data: userData,
@@ -76,19 +88,16 @@ const ArchiveMainPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F9FAFC] px-16 py-10 space-y-10">
       <div className="flex justify-between gap-x-20">
-        {/* 왼쪽 영역 */}
+        {/* 왼쪽 */}
         <div className="flex flex-col gap-y-10 min-w-[300px] max-w-[350px]">
-          {/* ✅ ProfileCard에 실제 API 데이터 전달 */}
           {isUserLoading && <p className="text-gray-500">프로필 불러오는 중...</p>}
           {isUserError && <p className="text-red-500">프로필 불러오기 실패</p>}
           {userData && <ProfileCard user={userData} />}
-
           <SideBar title="최근 접속한 활동" items={recentActivityList} />
         </div>
 
-        {/* 오른쪽 활동 영역 */}
+        {/* 오른쪽 */}
         <div className="flex-1 flex flex-col space-y-6">
-          {/* 상단 */}
           <div className="flex justify-between items-start w-full">
             <h2 className="text-[20pt] font-bold text-[#00193E]">나의 활동</h2>
             <div className="flex flex-col items-end gap-2">
@@ -104,21 +113,23 @@ const ArchiveMainPage: React.FC = () => {
             </div>
           </div>
 
-          {/* 활동 카드 */}
+          {/* 활동 카드 리스트 */}
           <div className="flex flex-wrap gap-2.5">
             {data?.activities
               ?.filter((activity: ActivityRecord) => {
                 if (sortOption === '진행 중') {
-                  return !activity.endDate; // endDate가 없으면 진행 중
+                  return !activity.endDate;
                 } else if (sortOption === '진행 완료') {
-                  return !!activity.endDate; // endDate가 있으면 진행 완료
+                  return !!activity.endDate;
                 }
                 return true;
               })
               .map((activity: ActivityRecord) => {
                 const idStr = String(activity.id);
                 const isSelected = selectedId === idStr;
-                const period = `${formatDate(activity.startDate)} ~ ${formatDate(activity.endDate)}`;
+                const period = `${formatDate(activity.startDate)} ~ ${formatDate(
+                  activity.endDate
+                )}`;
 
                 return (
                   <div
@@ -151,6 +162,7 @@ const ArchiveMainPage: React.FC = () => {
                       event_count={activity.event_count}
                       isSelected={isSelected}
                       onSelect={handleSelect}
+                      onToggleFavorite={handleToggleFavorite}
                     />
                   </div>
                 );
