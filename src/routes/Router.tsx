@@ -9,7 +9,7 @@ import MainPage from '@/pages/MainPage';
 import Header from '@/shared/layout/Header';
 import ResumeEditPage from '@/features/resume-editor/ResumeEditPage';
 import ResumeHistoryPage from '@/features/resume-history/ResumeHistoryPage';
-import ApplicationForm from '@/features/resume-history/ResumeViewPage';
+import ResumeViewPage from '@/features/resume-history/ResumeViewPage';
 import ArchiveMainPage from '@/features/archive/ArchiveMainPage';
 import ArchiveDetailPage from '@/features/archive/ArchiveDetailPage';
 import AdditionalInfoPage from '@/features/auth/AdditionalInfoPage';
@@ -25,7 +25,7 @@ const AppRouter = () => {
       <Header />
 
       {/* 페이지 내용 */}
-      <main className="px-6 py-8">
+      <main>
         <Routes>
           {/* 루트 경로 - 로그인 상태에 따라 다르게 처리 */}
           <Route
@@ -82,7 +82,7 @@ const AppRouter = () => {
             }
           />
           <Route
-            path="/resume/activity-recommend"
+            path="/resume/:id/activity-recommend"
             element={
               <SignedIn>
                 <ActivityRecommendPage />
@@ -103,23 +103,29 @@ const AppRouter = () => {
           {/* 기타 로그인 상태에서 보여줄 경로들 */}
           {/* <Route path="/testpage" element={<TestPage />} /> */}
           <Route
-            path="/resume/editor"
+            path="/resume/:id/editor"
             element={
               <SignedIn>
                 <ResumeEditPage />
               </SignedIn>
             }
           />
-          <Route path="/resume" element={
-            <SignedIn>
-              <ResumeHistoryPage />
-            </SignedIn>
-            } />
-          <Route path="/resume/:id" element={
+          <Route
+            path="/resume"
+            element={
               <SignedIn>
-                <ApplicationForm />
+                <ResumeHistoryPage />
               </SignedIn>
-            } />
+            }
+          />
+          <Route
+            path="/resume/:id"
+            element={
+              <SignedIn>
+                <ResumeViewPage />
+              </SignedIn>
+            }
+          />
           <Route
             path="/archive"
             element={

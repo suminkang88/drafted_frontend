@@ -2,10 +2,11 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useEditorGuideline } from '@/features/resume-editor/hooks/useEditor';
+import { useRecommendApi } from '@/features/resume-setup/hooks/useRecommend';
 
 interface GuideLineCardProps {
-  /** 문항 ID가 있으면 API로 가이드라인을 조회합니다. */
-  questionId?: number | string;
+  questionId: number;
+  editOrRecommend: 'edit' | 'recommend';
   /** questionId가 없거나, 에러/빈 응답일 때 표시할 기본 텍스트 */
   text?: string;
   className?: string;
@@ -13,19 +14,18 @@ interface GuideLineCardProps {
 
 const GuideLineCard: React.FC<GuideLineCardProps> = ({
   questionId,
+  editOrRecommend = 'edit',
   text = '가이드라인이 없습니다.',
   className,
 }) => {
-  console.log('[GuideLineCard] questionId:', questionId);
-  // questionId가 있을 때만 네트워크 호출
-  const { data, isLoading, isError, error } = useEditorGuideline(questionId);
+  // editOrRecommend에 따라 필요한 훅만 호출
+  const editResult = editOrRecommend === 'edit' ? useEditorGuideline(questionId) : null;
+  const recommendResult =
+    editOrRecommend === 'recommend' ? useRecommendApi().fetchGuideline(questionId) : null;
 
-  console.log('[GuideLineCard] useEditor state:', {
-    isLoading,
-    isError,
-    data,
-    error,
-  });
+  // 현재 모드에 따라 적절한 결과 선택
+  const currentResult = editOrRecommend === 'edit' ? editResult : recommendResult;
+  const { data, isLoading, isError, error } = currentResult || {};
 
   // 표시할 내용 결정: 로딩 → 에러 → API 데이터 → fallback text
   let contentToShow = text;

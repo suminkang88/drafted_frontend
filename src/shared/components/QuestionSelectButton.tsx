@@ -23,6 +23,10 @@ const QuestionSelectButton: React.FC<QuestionSelectButtonProps> = ({
 
   type TabType = number | 'extra';
   const [selectedTab, setSelectedTab] = useState<TabType>(0);
+
+  // controlledTab이 전달되면 그것을 사용, 아니면 내부 상태 사용
+  const currentSelectedTab = controlledTab !== undefined ? controlledTab : selectedTab;
+
   const buttonStyleClass = `
     w-20
     h-7 
@@ -45,10 +49,10 @@ const QuestionSelectButton: React.FC<QuestionSelectButtonProps> = ({
   };
 
   return (
-    <div className={`bg-white p-4 ${className}`}>
+    <div className={`bg-[#F8F9FA] p-4 ${className}`}>
       <div className="h-7 justify-start items-center gap-[15px] inline-flex">
         {tabs.map((tabNumber) => {
-          const isActive = tabNumber === selectedTab;
+          const isActive = tabNumber === currentSelectedTab;
           return isActive ? (
             <BlackBgButton
               key={tabNumber}
@@ -68,7 +72,7 @@ const QuestionSelectButton: React.FC<QuestionSelectButtonProps> = ({
           );
         })}
         {extraLabel &&
-          (selectedTab === 'extra' ? (
+          (currentSelectedTab === 'extra' ? (
             <BlackBgButton
               key="extra"
               className={buttonStyleClass}

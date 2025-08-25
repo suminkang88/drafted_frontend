@@ -1,8 +1,8 @@
 export interface Application {
   id: string;
-  name: string;
-  category: string;
-  position: string;
-  deadline: string;
-  questions?: {}[];
+  title: string;
+  category?: string;
+  position?: string;
+  deadline?: string;
+  createdAt?: string;
 }

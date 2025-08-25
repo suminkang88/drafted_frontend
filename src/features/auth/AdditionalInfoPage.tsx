@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import InfoInputCard from '@/shared/components/InfoInputCard';
 import BlackBgButton from '@/shared/components/BlackBgButton';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import { useUserApi } from '@/features/auth/api/userApi';
 
@@ -13,7 +13,7 @@ const AdditionalInfoPage = () => {
 
   const [form, setForm] = useState({
     name: '',
-    school: '',
+    university: '',
     major: '',
     graduateYear: '',
     interest: '',
@@ -47,23 +47,20 @@ const AdditionalInfoPage = () => {
 
   // 모든 항목 입력 여부 확인
   const isFormValid =
-    form.name && form.school && form.major && form.graduateYear && form.interest && form.agreed;
+    form.name && form.university && form.major && form.graduateYear && form.interest && form.agreed;
 
   // "시작하기" 클릭 시 실행
   const handleStart = async () => {
     if (isFormValid) {
       setIsSubmitting(true);
       try {
-        console.log('=== 백엔드 연동 시작 ===');
-        console.log('환경변수 VITE_API_BASE_URL:', (import.meta as any).env.VITE_API_BASE_URL);
-
         // Clerk 사용자 메타데이터 업데이트
         await user?.update({
           unsafeMetadata: {
             hasAdditionalInfo: true,
             additionalInfo: {
               name: form.name,
-              school: form.school,
+              university: form.university,
               major: form.major,
               graduateYear: form.graduateYear,
               interest: form.interest,
@@ -72,32 +69,23 @@ const AdditionalInfoPage = () => {
         });
 
         // 백엔드 API 호출 활성화
-        console.log('백엔드 API 호출 시작...');
         const userData = {
           name: form.name,
-          university: form.school,
+          university: form.university,
           major: form.major,
           graduation_year: Number(form.graduateYear),
           field_of_interest: form.interest,
         };
-        console.log('전송할 데이터:', userData);
 
         const result = await createUser(userData);
-        console.log('백엔드 API 호출 성공:', result);
 
         // 성공 시에만 아카이브 페이지로 이동
         alert('성공적으로 저장되었습니다!');
         navigate('/archive');
       } catch (error: any) {
-        console.error('=== 백엔드 연동 오류 ===');
-        console.error('추가 정보 저장 중 오류 발생:', error);
-
         // API 오류 응답 처리
         if (error.response) {
           const { status, data } = error.response;
-          console.log('HTTP 상태 코드:', status);
-          console.log('응답 데이터:', data);
-          console.log('응답 헤더:', error.response.headers);
 
           if (status === 404) {
             // 엔드포인트를 찾을 수 없음
@@ -120,11 +108,9 @@ const AdditionalInfoPage = () => {
           }
         } else if (error.request) {
           // 네트워크 오류 - 아카이브로 이동하지 않고 페이지에 머물기
-          console.error('네트워크 오류:', error.request);
           alert('네트워크 연결을 확인해주세요.');
         } else {
           // 기타 오류 - 아카이브로 이동하지 않고 페이지에 머물기
-          console.error('기타 오류:', error.message);
           alert(`오류가 발생했습니다: ${error.message}`);
         }
         setShowError(true);
@@ -165,8 +151,8 @@ const AdditionalInfoPage = () => {
         <InfoInputCard
           label="학교"
           type="text"
-          value={form.school}
-          onChange={(v) => handleChange('school', v)}
+          value={form.university}
+          onChange={(v) => handleChange('university', v)}
           required
         />
         <InfoInputCard
@@ -207,13 +193,23 @@ const AdditionalInfoPage = () => {
         />
         <p className="text-sm text-[#00193E]">
           Drafty의{' '}
-          <Link to="/terms" className="text-blue-600 underline cursor-pointer">
+          <a
+            href="/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 underline cursor-pointer"
+          >
             이용약관
-          </Link>{' '}
+          </a>{' '}
           및{' '}
-          <Link to="/privacy" className="text-blue-600 underline cursor-pointer">
+          <a
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 underline cursor-pointer"
+          >
             개인정보 처리방침
-          </Link>
+          </a>
           에 동의합니다
         </p>
       </div>

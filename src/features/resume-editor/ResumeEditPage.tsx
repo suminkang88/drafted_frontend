@@ -135,7 +135,7 @@ const ResumeEditPage = () => {
       {/* 우측 */}
       <div className="flex flex-col p-6 flex-1">
         <div>
-          <GuideLineCard questionId={questionId} />
+          <GuideLineCard questionId={questionId} editOrRecommend="edit" />
         </div>
         <div className="flex flex-col justify-end h-full">
           {/* 메시지 스레드 */}

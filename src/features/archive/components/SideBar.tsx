@@ -17,7 +17,7 @@ const SideBar: React.FC<SideBarProps> = ({ title, items }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="w-full max-w-md space-y-4">
+    <div className="w-full min-w-[300px] max-w-md space-y-4">
       <h2 className="text-[17pt] text-[#00193E] font-semibold">{title}</h2>
       <ul className="space-y-2">
         {items.map((item) => (
