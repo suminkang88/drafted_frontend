@@ -15,6 +15,7 @@ import {
   GuideLineCard,
   QuestionSelectButton,
   QuestionShowCard,
+  SelectedActivityCard,
 } from '@/shared/components';
 import {
   useCreateChatSession,
@@ -209,10 +210,10 @@ const ResumeEditPage = () => {
                         </div>
                       ) : (
                         <div className="flex flex-col gap-4">
-                          <ToggledSelectedActivityCard
+                          <SelectedActivityCard
                             event={suggested?.event_name || '이벤트 없음'}
                             activity={suggested?.activity || '활동 없음'}
-                            sections={dummySections}
+                            showClose={false}
                           />
                           <ContentInputBox
                             text={texts[question.questionId] || ''}
@@ -236,10 +237,13 @@ const ResumeEditPage = () => {
       {/* 우측 */}
       <div className="flex flex-col p-6 min-w-[500px] w-[500px]">
         <div>
-          <GuideLineCard
-            questionId={!isLoading && questionId > 0 ? questionId : 0}
-            editOrRecommend="edit"
-          />
+          {isLoading ? (
+            <div className="flex flex-col justify-center items-center py-12 gap-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#00193E]"></div>
+            </div>
+          ) : (
+            <GuideLineCard questionId={questionId > 0 ? questionId : 0} editOrRecommend="edit" />
+          )}
         </div>
         <div className="flex flex-col justify-end h-full">
           {/* 메시지 스레드 */}

@@ -39,9 +39,6 @@ type Opts = Omit<
 export function useEditorGuideline(questionId?: number | string, options?: Opts) {
   const { getToken } = useAuth();
   const enabled = !!questionId;
-
-  console.log('🔍 useEditorGuideline 호출됨 - questionId:', questionId, 'enabled:', enabled);
-
   return useQuery<EditorGuideline, unknown, EditorGuideline, QK>({
     queryKey: editorKeys.detail(questionId ?? 'unknown'),
     queryFn: () => fetchEditorGuideline(getToken, questionId!), // safe 내부 처리
