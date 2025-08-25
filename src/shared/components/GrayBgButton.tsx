@@ -20,14 +20,16 @@ const GrayBgButton: React.FC<GrayBgButtonProps> = ({
 		h-7 
 		p-[5px] 
 		bg-[#e4e8ee] 
+		hover:bg-[#d1d5db]
 		rounded-[10px] 
 		justify-center 
 		items-center 
 		gap-[5px] 
 		inline-flex 
-		hover:bg-[#d4d8de] 
 		transition-colors 
 		duration-200 
+    
+    
 		`,
     className
   );
@@ -39,9 +41,11 @@ const GrayBgButton: React.FC<GrayBgButtonProps> = ({
           `
             text-center 
             text-[#00193e] 
+            
             text-[13px] 
             font-semibold 
             font-noto
+             
           `,
           textClassName
         )}

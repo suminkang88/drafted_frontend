@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { Event } from '@/app/types';
+import { CreateEventInput, Event } from '@/app/types';
+import { GrayBgButton, BlackBgButton } from '@/shared/components';
 
 interface RecordField {
   label: string;
@@ -53,7 +54,6 @@ const FileUploader = () => {
 
   return (
     <div className="mt-6 px-2">
-      {/* 업로드 아이콘 */}
       <div className="flex items-center space-x-2 mb-2">
         <img
           src="/icons/fileadd.png"
@@ -61,14 +61,16 @@ const FileUploader = () => {
           width={30}
           height={30}
           className="cursor-pointer"
-          onClick={() => inputRef.current?.click()}
+          onClick={(e) => {
+            e.stopPropagation();
+            inputRef.current?.click();
+          }}
         />
         <span className="block font-noto font-semibold text-[18px] text-gray-700">
           파일 추가 (PDF, Word)
         </span>
       </div>
 
-      {/* 숨겨진 input */}
       <input
         ref={inputRef}
         type="file"
@@ -78,17 +80,28 @@ const FileUploader = () => {
         onChange={handleChange}
       />
 
-      {/* 업로드된 파일 리스트 */}
       <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-gray-700">
         {uploadedFiles.map((file, index) => (
           <li key={index} className="flex items-center justify-between rounded-md">
-            <button onClick={() => handleView(file)} title="View">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleView(file);
+              }}
+              title="View"
+            >
               <img src="/icons/view.svg" alt="View" width={40} height={40} />
             </button>
             <div className="flex-1 ml-2 mr-4">
               <span className="truncate max-w-[60%]">{file.name}</span>
             </div>
-            <button onClick={() => handleRemove(index)} title="Delete">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRemove(index);
+              }}
+              title="Delete"
+            >
               <img src="/icons/delete.svg" alt="Delete" width={20} height={20} />
             </button>
           </li>
@@ -98,39 +111,259 @@ const FileUploader = () => {
   );
 };
 
-interface ActivityRecordCardProps {
-  event?: Event;
-  isEmpty?: boolean;
+interface EmptyProps {
+  tempId: string;
+  onSelect: (id: string) => void;
+  isSelected: boolean;
+  onSave: (eventData: CreateEventInput) => void;
+  isNew?: boolean;
 }
 
-const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({ event, isEmpty }) => {
-  // if (isEmpty) {
-  // const fields = defaultFields;
-  // } else {
-  //   const fields =
-  // }
+interface EventProps {
+  event: Event;
+  onSelect: (id: string) => void;
+  isSelected: boolean;
+  onSave: (data: Partial<Event>) => void;
+}
+
+type ActivityRecordCardProps = EmptyProps | EventProps;
+
+const ActivityRecordCard: React.FC<ActivityRecordCardProps> = ({
+  isSelected = false,
+  onSelect,
+  ...props
+}) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [situation, setSituation] = useState('');
+  const [task, setTask] = useState('');
+  const [action, setAction] = useState('');
+  const [result, setResult] = useState('');
+  const [title, setTitle] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   const fields = defaultFields;
 
-  return (
-    <div className="flex flex-col gap-6">
-      <h2 className="text-[20pt] font-bold text-[#00193E]">
-        {isEmpty ? '이벤트 제목' : event?.title}
-      </h2>
-      <div className=" w-[918px] bg-[#E4E8EE] border-gray-300 rounded-xl p-4 ">
-        {fields.map((field) => (
-          <div className="pl-3" key={field.key}>
-            <div key={field.key} className="  w-[858px] h-[50px] rounded-md px-3 py-3">
-              <div className="flex items-start justify-between">
+  // ========================= 기존 이벤트 카드 =========================
+  if ('event' in props) {
+    const eventData = props.event;
+
+    return (
+      <div onClick={() => onSelect(eventData.id)} className="flex flex-col gap-6 w-full max-w-4xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-5">
+            {isEditing ? (
+              <>
+                <input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="text-[20pt] font-bold text-[#00193E] bg-transparent outline-none"
+                />
+                <div className="flex items-center gap-2 ml-4">
+                  <input
+                    type="date"
+                    className="w-32 bg-[#F8F9FA] outline-none pl-3"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                  <span>~</span>
+                  <input
+                    type="date"
+                    className="w-32 bg-[#F8F9FA] outline-none pl-3"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="text-[20pt] font-bold">{eventData.title}</h2>
+                <span className="text-[#9B9DA1] text-[12pt] font-noto whitespace-nowrap">
+                  {eventData.startDate?.substring(0, 10) ?? ''}
+                  {eventData.endDate && !eventData.endDate.startsWith('9999-12-31')
+                    ? ` ~ ${eventData.endDate.substring(0, 10)}`
+                    : ' ~'}
+                </span>
+              </>
+            )}
+          </div>
+          <div onClick={(e) => e.stopPropagation()}>
+            {isEditing ? (
+              <BlackBgButton
+                onClick={() => {
+                  props.onSave({
+                    title,
+                    situation,
+                    task,
+                    action,
+                    result,
+                    startDate,
+                    endDate,
+                  });
+                  setIsEditing(false);
+                }}
+                innerText="저장"
+                className="px-4 py-3 w-20 h-7"
+                textClassName="text-[13px]"
+              />
+            ) : (
+              <GrayBgButton
+                onClick={() => {
+                  setTitle(eventData.title ?? '');
+                  setSituation(eventData.situation ?? '');
+                  setTask(eventData.task ?? '');
+                  setAction(eventData.action ?? '');
+                  setResult(eventData.result ?? '');
+                  setStartDate(eventData.startDate ?? '');
+                  setEndDate(eventData.endDate ?? '');
+                  setIsEditing(true);
+                }}
+                innerText="수정"
+                className="px-4 py-3 w-20 h-7"
+                textClassName="text-[13px]"
+              />
+            )}
+          </div>
+        </div>
+
+        <div className={`bg-[#E4E8EE] rounded-xl p-4 border ${isSelected ? 'border-black' : ''}`}>
+          {fields.map((field) => (
+            <div className="pl-3" key={field.key}>
+              <div className="w-full h-[50px] rounded-md px-3 py-3">
                 <label className="block font-noto font-semibold text-[18px] text-gray-700">
                   {field.label}
                 </label>
               </div>
+              <textarea
+                placeholder={field.placeholder}
+                className="w-full h-[99px] border rounded-md p-2 text-[16px] focus:outline-none focus:ring-1 focus:ring-gray-500 resize-none"
+                rows={2}
+                value={
+                  isEditing
+                    ? field.key === 'situation'
+                      ? situation
+                      : field.key === 'task'
+                        ? task
+                        : field.key === 'action'
+                          ? action
+                          : field.key === 'result'
+                            ? result
+                            : ''
+                    : field.key === 'situation'
+                      ? eventData.situation
+                      : field.key === 'task'
+                        ? eventData.task
+                        : field.key === 'action'
+                          ? eventData.action
+                          : field.key === 'result'
+                            ? eventData.result
+                            : ''
+                }
+                onChange={
+                  isEditing
+                    ? (e) => {
+                        if (field.key === 'situation') setSituation(e.target.value);
+                        if (field.key === 'task') setTask(e.target.value);
+                        if (field.key === 'action') setAction(e.target.value);
+                        if (field.key === 'result') setResult(e.target.value);
+                      }
+                    : undefined
+                }
+                readOnly={!isEditing}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          ))}
+          <FileUploader />
+        </div>
+      </div>
+    );
+  }
+
+  // ========================= 새 이벤트 카드 =========================
+  const tempId = props.tempId;
+  const handleSave = () => {
+    props.onSave({
+      title,
+      situation,
+      task,
+      action,
+      result,
+      startDate,
+      endDate: endDate || undefined, // ✅ 빈 값이면 undefined
+    });
+  };
+
+  return (
+    <div className="flex flex-col gap-6 w-full max-w-4xl">
+      <div className="flex items-center justify-between">
+        <input
+          className="text-[20pt] font-bold text-[#00193E] bg-transparent outline-none"
+          placeholder="이벤트 제목"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
+        />
+
+        <div className="flex gap-5">
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              className="w-32 bg-[#F8F9FA] outline-none pl-3"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+            />
+            <span>~</span>
+            <input
+              type="date"
+              className="w-32 bg-[#F8F9FA] outline-none pl-3"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+          <div onClick={(e) => e.stopPropagation()}>
+            <BlackBgButton
+              onClick={handleSave}
+              innerText="저장"
+              className="px-4 py-3 w-20 h-7"
+              textClassName="text-[13px]"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-[#E4E8EE] border-gray-300 rounded-xl p-4">
+        {fields.map((field) => (
+          <div className="pl-3" key={field.key}>
+            <div className="w-full h-[50px] rounded-md px-3 py-3">
+              <label className="block font-noto font-semibold text-[18px] text-gray-700">
+                {field.label}
+              </label>
             </div>
             <textarea
               placeholder={field.placeholder}
-              className="w-[858px] h-[99px] border rounded-md p-2 text-lg focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+              className="w-full h-[99px] border rounded-md p-2 text-lg focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
               rows={2}
+              value={
+                field.key === 'situation'
+                  ? situation
+                  : field.key === 'task'
+                    ? task
+                    : field.key === 'action'
+                      ? action
+                      : field.key === 'result'
+                        ? result
+                        : ''
+              }
+              onChange={(e) => {
+                if (field.key === 'situation') setSituation(e.target.value);
+                if (field.key === 'task') setTask(e.target.value);
+                if (field.key === 'action') setAction(e.target.value);
+                if (field.key === 'result') setResult(e.target.value);
+              }}
+              onClick={(e) => e.stopPropagation()}
             />
           </div>
         ))}

@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { Header, DeleteOrAdd } from '@/shared/components';
-import { applications as dummyData } from './dummy';
+import React, { useState, useEffect } from 'react';
+import { DeleteOrAdd } from '@/shared/components';
 import { Application } from '@/app/types';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useHistoryApi } from './hooks/useHistory';
 
 interface tableProps {
   data: Application[];
@@ -9,6 +10,12 @@ interface tableProps {
 }
 
 const ApplicationTable: React.FC<tableProps> = ({ data, toggleSelect }) => {
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return (
+      <div className="text-center py-8 font-noto text-gray-500">작성된 지원서가 없습니다.</div>
+    );
+  }
+
   return (
     <div className="overflow-x-auto rounded-md">
       <table className="min-w-full border-b border-[#9B9DA1] table-fixed">
@@ -28,7 +35,16 @@ const ApplicationTable: React.FC<tableProps> = ({ data, toggleSelect }) => {
                 <input type="checkbox" onChange={() => toggleSelect?.(application.id)} />
               </td>
               <td className="p-4 font-semibold text-[#00193E] border-l border-[#9B9DA1]">
-                <a href={`/applications/${application.id}`}>{application.name}</a>
+                <Link
+                  to={`/resume/${application.id}`}
+                  state={{
+                    title: application.title,
+                    category: application.category,
+                    deadline: application.deadline,
+                  }}
+                >
+                  {application.title}
+                </Link>
               </td>
               <td className="p-4 font-semibold text-[#00193E] border-l border-[#9B9DA1]">
                 {application.category}
@@ -48,13 +64,50 @@ const ApplicationTable: React.FC<tableProps> = ({ data, toggleSelect }) => {
 };
 
 const ResumeHistoryPage = () => {
-  const [applications, setApplications] = useState<Application[]>(dummyData);
-  // db와 연결 시 위 부분 수정.
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { fetchResumes, deleteResume } = useHistoryApi();
+  const { data, isLoading, isError } = fetchResumes();
+
+  const [applications, setApplications] = useState<Application[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const onDeleteClick = () => {
-    setApplications((prev) => prev.filter((app) => !selectedIds.includes(app.id)));
-    setSelectedIds([]); // 선택 초기화)
+  // data가 변경될 때마다 applications 상태 업데이트
+  useEffect(() => {
+    if (data) {
+      setApplications(data);
+      console.log('📊 applications 상태 업데이트됨:', data);
+    }
+  }, [data]);
+
+  const onDeleteClick = async () => {
+    if (selectedIds.length === 0) {
+      alert('삭제할 지원서를 선택해주세요.');
+      return;
+    }
+
+    const isConfirmed = window.confirm('선택한 지원서를 삭제하시겠습니까?');
+
+    if (isConfirmed) {
+      try {
+        console.log('🗑️ 삭제 시작 - 선택된 ID들:', selectedIds);
+
+        // 선택된 모든 지원서를 삭제
+        for (const id of selectedIds) {
+          await deleteResume(id);
+          console.log('✅ 지원서 삭제 완료 - ID:', id);
+        }
+
+        // 성공적으로 삭제된 후 목록에서 제거
+        setApplications((prev) => prev.filter((app) => !selectedIds.includes(app.id)));
+        setSelectedIds([]); // 선택 초기화
+
+        alert('선택한 지원서가 삭제되었습니다.');
+      } catch (error) {
+        console.error('❌ 지원서 삭제 실패:', error);
+        alert('지원서 삭제에 실패했습니다. 다시 시도해주세요.');
+      }
+    }
   };
 
   const onToggleSelect = (id: string) => {
@@ -63,19 +116,29 @@ const ResumeHistoryPage = () => {
     );
   };
 
+  const onAddClick = () => {
+    navigate('/resume/new');
+  };
+
   return (
-    <div className="bg-[#F8F9FA] ">
-      {/* 헤더 및 배경색 지우기 */}
-      <Header />
+    <div>
       <div className="m-32 mt-16">
         {/* margin 값 모든 페이지에서 통일 필요 */}
         <div className="">
           <h1 className="text-[#00193e] text-[42px] font-extrabold font-noto">나의 지원서</h1>
         </div>
         <div className="flex justify-end items-center gap-4 mt-16 mb-8">
-          <DeleteOrAdd onDeleteClick={onDeleteClick} />
+          <DeleteOrAdd onAddClick={onAddClick} onDeleteClick={onDeleteClick} />
         </div>
-        <ApplicationTable data={applications} toggleSelect={onToggleSelect} />
+        {isLoading ? (
+          <div className="text-center py-8 text-gray-500">지원서 목록을 로딩 중입니다...</div>
+        ) : isError ? (
+          <div className="text-center py-8 text-red-500">
+            지원서 목록을 불러오는데 실패했습니다.
+          </div>
+        ) : (
+          <ApplicationTable data={applications} toggleSelect={onToggleSelect} />
+        )}
       </div>
     </div>
   );

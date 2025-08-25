@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { GrayBgButton, BlackBgButton } from '@/shared/components';
+// src/features/resume-editor/ResumeEditPage.tsx
+import React, { useMemo, useState } from 'react';
 import {
   AIResponseCard,
-  AISuggestionCard,
   AutoSaved,
   ChatInput,
   ContentInputBox,
@@ -10,147 +9,274 @@ import {
   ToggledSelectedActivityCard,
   UserResponseCard,
 } from './components';
-
 import { useDebounceSave } from './components';
-
 import {
   ApplicationTitle,
+  GuideLineCard,
   QuestionSelectButton,
   QuestionShowCard,
-  GuideLineCard,
+  SelectedActivityCard,
 } from '@/shared/components';
+import {
+  useCreateChatSession,
+  useChatMessages,
+  useSendChatMessage,
+} from '@/features/resume-editor/hooks/useEditor';
+import { useSetupApi } from '../resume-setup/api/setupAPI';
+import { useParams, useLocation } from 'react-router-dom';
+import { Question } from '@/app/types';
 
-import Header from '@/shared/layout/Header';
 
 interface ActivityDetailSection {
   title: string;
   content: string;
 }
+
 const dummySections: ActivityDetailSection[] = [
-  {
-    title: '활동 요약',
-    content: '연말부터 8주간 서비스기획 직무 관련 국비지원 프로그램 수료...',
-  },
+  { title: '활동 요약', content: '연말부터 8주간 서비스기획 직무 관련 국비지원 프로그램 수료...' },
   {
     title: '나의 활동 및 개선',
     content: '‘지그재그’ 커머스 플랫폼의 커뮤니티 기능을 개선하는 파일럿 프로젝트...',
   },
-  {
-    title: '결과 및 성과',
-    content: '긍정적인 피드백, PM 직무에 대한 이해도 제고...',
-  },
+  { title: '결과 및 성과', content: '긍정적인 피드백, PM 직무에 대한 이해도 제고...' },
 ];
 
-type MessageType = 'drag' | 'user';
-
-interface MessageItem {
-  type: MessageType;
-  content: string;
-}
-
-//
 const ResumeEditPage = () => {
-  const [text, setText] = useState('');
-  const { status, lastSaved } = useDebounceSave(text, 1000);
+  const { id: resumeId } = useParams<{ id: string }>();
+  const location = useLocation();
+  const { fetchApplication } = useSetupApi();
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [isLoading, setIsLoading] = useState(true); // 지원서 문항 로딩 상태 관리
+  const [error, setError] = useState<string | null>(null);
 
-  const [dragText, setDragText] = useState(''); // 임시 드래그 상태
+  // location.state에서 지원서 제목 전달받음
+  const passedData = location.state as {
+    title?: string;
+  } | null;
+
+  // 지원서 문항 가져오기
+  useEffect(() => {
+    const loadApplicationQuestions = async () => {
+      if (!resumeId) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const result = await fetchApplication(resumeId);
+        console.log('fetchApplication 응답:', result);
+        setQuestions(result);
+      } catch (err) {
+        console.error('지원서 문항 로딩 실패:', err);
+        setError('지원서 문항을 불러오는데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadApplicationQuestions();
+  }, [resumeId]);
+
+  const [texts, setTexts] = useState<{ [key: number]: string }>({});
+  const [selectedQuestionTab, setSelectedQuestionTab] = useState<number>(0);
+  const [dragText, setDragText] = useState('');
   const [chatText, setChatText] = useState('');
+  const [sessionId, setSessionId] = useState<number | string | null>(null);
 
-  const [messageThread, setMessageThread] = useState<MessageItem[]>([]);
+  // 선택된 질문의 questionId 찾기
+  const selectedQuestion = questions.find(
+    (q) => parseInt(q.questionOrder) === selectedQuestionTab + 1
+  );
+  const selectedQuestionId = selectedQuestion?.questionId || 0;
+
+  const {
+    data: selectedSuggestions,
+    isLoading: isLoadingSuggestions,
+    isFetching: isFetchingSuggestions,
+    refetch: refetchSuggestions,
+  } = useSuggestion(!isLoading && selectedQuestionId > 0 ? selectedQuestionId : 0);
+  const suggested = selectedSuggestions?.suggestions?.[0];
+
+  // selectedQuestionId가 바뀔 때마다 useSuggestion API 재요청 (지원서 로딩 완료 후에만)
+  useEffect(() => {
+    if (selectedQuestionId > 0 && !isLoading) {
+      refetchSuggestions();
+    }
+  }, [selectedQuestionId, refetchSuggestions, isLoading]);
+
+  const questionId = selectedQuestionId;
+
+  const createSession = useCreateChatSession();
+  const msgsQuery = useChatMessages(sessionId ?? undefined);
+  const sendMutation = useSendChatMessage();
+
+  const serverThread = useMemo(() => {
+    if (!msgsQuery.data?.messages) return [];
+    return msgsQuery.data.messages.map((m) =>
+      m.role === 'assistant'
+        ? { type: 'assistant' as const, content: m.content }
+        : { type: 'user' as const, content: m.content }
+    );
+  }, [msgsQuery.data]);
+
+  const handleSubmit = async (plain: string) => {
+    const trimmed = plain.trim();
+    if (!trimmed && !dragText.trim()) return;
+
+    let sid = sessionId;
+
+    // 1) 세션 없으면 생성
+    if (!sid) {
+      const created = await createSession.mutateAsync({
+        application_id: 1,
+        question_id: Number(questionId),
+        title: '자기소개서 에디터',
+      });
+      console.log(created.session_id);
+
+      // created가 { data: {...} } 인 경우 처리
+      sid = created?.session_id ?? created?.data?.session_id;
+
+      if (!sid) {
+        console.error('세션 생성 응답에 session_id가 없습니다.', created);
+        return;
+      }
+      setSessionId(sid);
+    }
+
+    // 2) 메시지 전송
+    const combinedMessage = dragText
+      ? `<<선택 텍스트>>\n${dragText}\n\n<<요청>>\n${trimmed}`
+      : trimmed;
+
+    await sendMutation.mutateAsync({
+      sessionId: sid!,
+      payload: {
+        message: combinedMessage,
+        personal_statement: text,
+        question_id: Number(questionId),
+      },
+    });
+
+    setDragText('');
+    setChatText('');
+  };
 
   return (
-    <>
-      <div className="flex w-full min-h-screen bg-gray-50">
-        {/* 좌측 영역 */}
-        <div className="w-[1200px] p-6 bg-white border-r border-gray-200">
-          <div className="flex justify-between items-end w-full">
-            <ApplicationTitle targetName={'멋쟁이 사자처럼 13기'} />
-            <AutoSaved status={status} lastSaved={lastSaved} />
+    <div className="flex w-full min-h-screen bg-gray-50">
+      {/* 좌측 */}
+      <div className="flex-1 px-8 bg-white border-r border-gray-200">
+        {isLoading ? (
+          <div className="flex justify-center items-center text-center font-noto font-semibold h-screen">
+            지원서를 불러오는 중입니다...
           </div>
+        ) : (
+          <>
+            <div className="flex justify-between items-end w-full">
+              <ApplicationTitle targetName={passedData?.title || '멋쟁이 사자처럼 13기'} />
+            </div>
 
-          <QuestionSelectButton
-            className="flex justify-end"
-            questionNumbers={4}
-            extraLabel="전체 보기"
-          />
-          {/* 질문 영역 */}
-          {/* <div className="flex justify-end items-start mb-4">
-            <QuestionSelectButton questionNumbers={4} />
-            <GrayBgButton
-              className="w-20 h-7 p-[5px] mt-[15.5px] rounded-[10px] justify-center items-center gap-[5px] flex transition-colors duration-200"
-              onClick={() => console.log('전체 보기 클릭')}
-              textClassName="text-center text-[13px] font-semibold font-noto"
-              innerText="전체 보기"
-            />
-          </div> */}
+        <QuestionSelectButton
+          className="flex justify-end"
+          questionNumbers={4}
+          extraLabel="전체 보기"
+        />
 
-          <div className="mb-4">
-            <QuestionShowCard question="멋쟁이사자처럼 13기에 지원한 동기를 적어주세요" />
-          </div>
-
-          <div className="mb-4">
-            <ToggledSelectedActivityCard
-              event="서비스기획 동아리"
-              activity="프로젝트 기획 및 실행"
-              sections={dummySections}
-            />
-          </div>
-
-          <div>
-            <ContentInputBox
-              text={text}
-              setText={setText}
-              onTextDrag={(selectedText) => setDragText(selectedText)}
-            />
-          </div>
+        <div className="mb-4">
+          <QuestionShowCard question="멋쟁이사자처럼 13기에 지원한 동기를 적어주세요" />
         </div>
 
-        {/* 우측 가이드 및 메시지 스레드 */}
-        {/* 우측 가이드 및 메시지 스레드 */}
-        <div className="flex flex-col p-6 flex-1">
-          {/* 상단: 가이드 카드 */}
-          <div className="mb-4">
-            <GuideLineCard />
+        <div className="mb-4">
+          <ToggledSelectedActivityCard
+            event="서비스기획 동아리"
+            activity="프로젝트 기획 및 실행"
+            sections={dummySections}
+          />
+        </div>
+
+                if (isSelected) {
+                  return (
+                    <div key={question.questionId} className="flex flex-col gap-4 mb-4">
+                      <QuestionShowCard
+                        question={question.content}
+                        maximumTextLength={question.limit}
+                      />
+                      {isLoadingSuggestions || isFetchingSuggestions ? (
+                        <div className="flex justify-center items-center h-full">
+                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-4">
+                          <SelectedActivityCard
+                            event={suggested?.event_name || '이벤트 없음'}
+                            activity={suggested?.activity || '활동 없음'}
+                            showClose={false}
+                          />
+                          <ContentInputBox
+                            text={texts[question.questionId] || ''}
+                            limit={question.limit}
+                            setText={(newText) =>
+                              setTexts((prev) => ({ ...prev, [question.questionId]: newText }))
+                            }
+                            onTextDrag={setDragText}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+              })}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* 우측 */}
+      <div className="flex flex-col p-6 min-w-[500px] w-[500px]">
+        <div>
+          {isLoading ? (
+            <div className="flex flex-col justify-center items-center py-12 gap-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#00193E]"></div>
+            </div>
+          ) : (
+            <GuideLineCard questionId={questionId > 0 ? questionId : 0} editOrRecommend="edit" />
+          )}
+        </div>
+        <div className="flex flex-col justify-end h-full">
+          {/* 메시지 스레드 */}
+          <div className="flex flex-col items-end space-y-4 overflow-y-auto max-h-[300px] pr-2 mb-4">
+            {serverThread.map((m, i) =>
+              m.type === 'assistant' ? (
+                <AIResponseCard key={`srv-${i}`} content={m.content} />
+              ) : (
+                <UserResponseCard key={`srv-${i}`} content={m.content} />
+              )
+            )}
+            {/* 닫기 시 dragText 초기화 */}
+            {dragText && <DragContentCard content={dragText} onClose={() => setDragText('')} />}
           </div>
 
-          <div className="flex flex-col justify-end h-full">
-            {/* 메시지 스레드 (스크롤 가능) */}
-            <div className="flex flex-col items-end space-y-4 overflow-y-auto max-h-[300px] pr-2 mb-4">
-              {messageThread.map((msg, idx) => (
-                <div key={idx}>
-                  {msg.type === 'user' ? (
-                    <UserResponseCard content={msg.content} />
-                  ) : (
-                    <DragContentCard content={msg.content} />
-                  )}
-                </div>
-              ))}
-              {dragText && <DragContentCard content={dragText} />}
-            </div>
-
-            {/* 하단 고정 입력창 */}
-            <div className="mt-auto">
-              <ChatInput
-                text={chatText}
-                setText={setChatText}
-                onSubmit={(text) => {
-                  if (text.trim()) {
-                    const newThread = [...messageThread];
-                    if (dragText.trim()) {
-                      newThread.push({ type: 'drag', content: dragText });
-                      setDragText('');
-                    }
-                    newThread.push({ type: 'user', content: text });
-                    setMessageThread(newThread);
-                    setChatText('');
-                  }
-                }}
-              />
-            </div>
+          {/* 입력창 */}
+          <div className="mt-auto">
+            <ChatInput
+              text={chatText}
+              setText={setChatText}
+              onSubmit={handleSubmit}
+              disabled={createSession.isPending || sendMutation.isPending}
+            />
+            {(createSession.isError || sendMutation.isError) && (
+              <p className="mt-2 text-sm text-red-600">
+                채팅 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.
+              </p>
+            )}
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
+
 export default ResumeEditPage;
