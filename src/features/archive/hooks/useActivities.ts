@@ -20,11 +20,11 @@ export const useActivities = () => {
           category: rawActivity.category || '',
           startDate: rawActivity.startDate || rawActivity.start_date || '',
           endDate: rawActivity.endDate || rawActivity.end_date || '',
-          eventCount: rawActivity.event_count || rawActivity.eventCount || 0,
+          event_count: rawActivity.event_count || rawActivity.eventCount || 0,
           isFavorite: rawActivity.isFavorite || rawActivity.favorite || false,
           createdAt: rawActivity.createdAt || rawActivity.created_at || '',
           updatedAt: rawActivity.updatedAt || rawActivity.updated_at || '',
-          events: rawActivity.events || [],
+          recentEvents: rawActivity.recentEvents || [],
         })) || [];
 
       console.log('🔄 원본 activities 데이터:', response);

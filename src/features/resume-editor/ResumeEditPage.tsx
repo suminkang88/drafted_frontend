@@ -147,7 +147,8 @@ const ResumeEditPage = () => {
                 <UserResponseCard key={`srv-${i}`} content={m.content} />
               )
             )}
-            {dragText && <DragContentCard content={dragText} />}
+            {/* 닫기 시 dragText 초기화 */}
+            {dragText && <DragContentCard content={dragText} onClose={() => setDragText('')} />}
           </div>
 
           {/* 입력창 */}

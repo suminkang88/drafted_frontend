@@ -26,6 +26,8 @@ export interface CreateEventInput {
   title: string;
   situation?: string;
   task?: string;
+  startDate?: string;
+  endDate?: string;
   action?: string;
   result?: string;
 }

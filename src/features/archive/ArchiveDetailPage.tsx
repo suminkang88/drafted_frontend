@@ -4,7 +4,7 @@ import { UndoButton, ActivityRecordCard as EventCard, DeleteOrAdd } from '@/shar
 import { useNavigate, useParams } from 'react-router-dom';
 import { Event, CreateEventInput } from '@/app/types';
 import { useActivity, usePartialUpdateActivity, useCreateActivity } from './hooks/useActivities';
-import { useEvents, useCreateEvent, useDeleteEvent } from './hooks/useEvents';
+import { useUpdateEvent, useEvents, useCreateEvent, useDeleteEvent } from './hooks/useEvents';
 
 const categories = ['공모전', '대외활동', '동아리', '연구', '학회', '인턴십'];
 
@@ -50,24 +50,41 @@ const KeywordInput: React.FC<KeywordProps> = ({ keywords, onAdd, onRemove }) => 
   );
 };
 
+// ✅ payload 정리 유틸 함수 (빈 문자열/undefined/null 제거)
+const cleanPayload = (data: Record<string, any>): Record<string, any> => {
+  const cleaned = { ...data };
+  Object.keys(cleaned).forEach((key) => {
+    const val = cleaned[key];
+    if (val === '' || val === undefined) {
+      if (key === 'endDate') {
+        cleaned[key] = '9999-12-31'; // ✅ 끝나는 날짜 없음 → 가짜 미래 날짜 (왜냐면 백엔드가 null못받음.. null로 덮어씌울 수가 없음)
+      } else {
+        delete cleaned[key]; // ✅ 나머지는 그냥 제거
+      }
+    }
+  });
+  return cleaned;
+};
+
+// ✅ 날짜 정규화 유틸
+const normalizeDate = (value?: string) => {
+  if (!value) return undefined;
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : undefined;
+};
+
 const ArchiveDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-
   const isNew = id === 'new';
 
-  const {
-    data: activity,
-    isLoading,
-    error,
-  } = useActivity(id ?? '', {
-    enabled: !isNew && !!id,
-  });
+  const { data: activity, isLoading, error } = useActivity(id ?? '', { enabled: !isNew && !!id });
 
   const { mutate: updateActivity } = usePartialUpdateActivity();
   const { mutate: createActivity } = useCreateActivity();
   const { mutate: createEvent } = useCreateEvent(!isNew ? id! : '');
   const { mutate: deleteEvent } = useDeleteEvent(!isNew ? id! : '');
+  const { mutate: updateEvent } = useUpdateEvent(!isNew ? id! : '');
+
   const [keywords, setKeywords] = useState<string[]>([]);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
@@ -75,6 +92,7 @@ const ArchiveDetailPage: React.FC = () => {
   const [endDate, setEndDate] = useState('');
   const [role, setRole] = useState('');
   const [description, setDescription] = useState('');
+
   useEffect(() => {
     if (activity && !isNew) {
       setTitle(activity.title || '');
@@ -84,7 +102,6 @@ const ArchiveDetailPage: React.FC = () => {
       setRole(activity.role || '');
       setDescription(activity.description || '');
 
-      // keywords 정규화 - 이미 정규화된 데이터이므로 간단하게 처리
       if (typeof activity.keywords === 'string') {
         const arr = activity.keywords
           .split(',')
@@ -102,115 +119,103 @@ const ArchiveDetailPage: React.FC = () => {
     }
   }, [activity, isNew]);
 
-  // 이벤트 불러오기
   const eventsActivityId = !isNew && activity ? activity.id : '';
-
   const {
     data: events = [],
-    isError,
     isLoading: eventsLoading,
     error: eventsError,
   } = useEvents(eventsActivityId);
 
-  // 이벤트 데이터 로깅
-  useEffect(() => {
-    if (events && events.length > 0) {
-      console.log('📋 받아온 이벤트 목록:', events);
-    } else if (!eventsLoading && !eventsError && eventsActivityId) {
-      console.log('📋 이벤트가 없습니다. (activityId:', eventsActivityId, ')');
-    } else if (!eventsActivityId) {
-      console.log('📋 activityId가 없어서 이벤트를 조회하지 않습니다.');
-    }
-  }, [events, eventsLoading, eventsError, eventsActivityId]);
-
-  if (eventsError) {
-    console.error('❌ 이벤트 조회 에러:', eventsError);
-  }
-
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [newEventId, setNewEventId] = useState<string | null>(null);
 
-  const handleSelect = (id: string) => {
-    setSelectedId((prev) => (prev === id ? null : id));
-  };
+  const handleSelect = (id: string) => setSelectedId((prev) => (prev === id ? null : id));
+  const handleAddEvent = () => setNewEventId(`temp-${Date.now()}`);
 
-  const handleAddEvent = () => {
-    // 새 이벤트 생성을 위한 임시 ID 생성
-    const tempId = `temp-${Date.now()}`;
-    setNewEventId(tempId);
-  };
-
+  // ✅ 새 이벤트 저장
   const handleSaveNewEvent = (eventData: CreateEventInput) => {
     if (!eventData.title.trim()) {
       alert('이벤트 제목을 입력해주세요.');
       return;
     }
 
-    // title만 있어도 생성 가능하도록 payload 생성
-    const payload: CreateEventInput = {
+    const payload: CreateEventInput = cleanPayload({
       title: eventData.title.trim(),
-    };
-
-    // 추가 필드가 있으면 포함
-    if (eventData.situation?.trim()) {
-      payload.situation = eventData.situation.trim();
-    }
-    if (eventData.task?.trim()) {
-      payload.task = eventData.task.trim();
-    }
-    if (eventData.action?.trim()) {
-      payload.action = eventData.action.trim();
-    }
-    if (eventData.result?.trim()) {
-      payload.result = eventData.result.trim();
-    }
+      situation: eventData.situation?.trim(),
+      task: eventData.task?.trim(),
+      action: eventData.action?.trim(),
+      result: eventData.result?.trim(),
+      startDate: normalizeDate(eventData.startDate),
+      endDate: normalizeDate(eventData.endDate), // ✅ 선택 안 하면 undefined
+    });
 
     console.log('📦 새 이벤트 생성 payload:', payload);
 
     createEvent(payload, {
       onSuccess: (newEvent) => {
         console.log('✅ 새 이벤트가 생성되었습니다:', newEvent);
-        setNewEventId(null); // 임시 ID 제거
+        setNewEventId(null);
       },
       onError: (error) => {
         console.error('❌ 이벤트 생성 중 오류:', error);
         alert('이벤트 생성 중 오류가 발생했습니다.');
-        setNewEventId(null); // 에러 시에도 임시 ID 제거
+        setNewEventId(null);
       },
     });
   };
 
-  const handleDeleteEvent = () => {
-    const confirmDelete = window.confirm('정말 삭제하시겠습니까?');
-    if (!confirmDelete) return;
-    if (selectedId && activity?.id) {
-      console.log(`🗑️ 이벤트 삭제 시작: eventId=${selectedId}, activityId=${activity.id}`);
+  // ✅ 기존 이벤트 업데이트
+  const handleUpdateEvent = (id: string, data: Partial<Event>) => {
+    const finalPayload = cleanPayload({
+      ...data,
+      startDate: normalizeDate(data.startDate),
+      endDate: normalizeDate(data.endDate),
+    });
 
-      deleteEvent(selectedId, {
+    console.log('📦 이벤트 업데이트 payload:', finalPayload);
+
+    updateEvent(
+      { id, data: finalPayload },
+      {
         onSuccess: () => {
-          console.log('✅ 이벤트 삭제 완료');
-          setSelectedId(null); // 선택 해제
-          alert('이벤트가 삭제되었습니다.');
+          console.log('✅ 이벤트 업데이트 성공!');
+          alert('이벤트가 수정되었습니다.');
         },
         onError: (error) => {
-          console.error('❌ 이벤트 삭제 실패:', error);
-          alert('이벤트 삭제 중 오류가 발생했습니다.');
+          console.error('❌ 이벤트 업데이트 실패:', error);
+          alert('이벤트 수정 중 오류가 발생했습니다.');
         },
-      });
-    } else {
-      alert('삭제할 이벤트를 선택해주세요.');
-    }
+      }
+    );
   };
+
+  const handleDeleteEvent = () => {
+    if (!selectedId || !activity?.id) return alert('삭제할 이벤트를 선택해주세요.');
+    if (!window.confirm('정말 삭제하시겠습니까?')) return;
+
+    deleteEvent(selectedId, {
+      onSuccess: () => {
+        console.log('✅ 이벤트 삭제 완료');
+        setSelectedId(null);
+        alert('이벤트가 삭제되었습니다.');
+      },
+      onError: (error) => {
+        console.error('❌ 이벤트 삭제 실패:', error);
+        alert('이벤트 삭제 중 오류가 발생했습니다.');
+      },
+    });
+  };
+
   const handleAddKeyword = (kw: string) => setKeywords((prev) => [...prev, kw]);
   const handleRemoveKeyword = (kw: string) => setKeywords((prev) => prev.filter((k) => k !== kw));
 
+  // ✅ 활동 저장
   const handleSave = () => {
-    if (!title || !category || !startDate || !endDate || !role) {
+    if (!title || !category || !startDate || !role) {
       alert('모든 필드를 입력해주세요.');
       return;
     }
 
-    // 저장 시에만 {a,b} 포맷으로 변환
     const toCurlyCsv = (arr: string[]) =>
       arr.length
         ? `{${arr
@@ -219,22 +224,14 @@ const ArchiveDetailPage: React.FC = () => {
             .join(',')}}`
         : '{}';
 
-    // 백엔드에서 기대하는 필드명으로 변환
-    const payload = {
+    const payload = cleanPayload({
       title,
       category,
-      startDate,
-      endDate,
+      startDate: normalizeDate(startDate),
+      endDate: normalizeDate(endDate), // ✅ 선택 안 하면 undefined
       role,
       description,
-      keywords: toCurlyCsv(keywords), // 예: {a,b} 형식으로 보냄
-    };
-
-    // undefined 값 제거
-    Object.keys(payload).forEach((key) => {
-      if (payload[key as keyof typeof payload] === undefined) {
-        delete payload[key as keyof typeof payload];
-      }
+      keywords: toCurlyCsv(keywords),
     });
 
     console.log('📦 전송할 payload:', payload);
@@ -247,12 +244,10 @@ const ArchiveDetailPage: React.FC = () => {
         },
         onError: (error) => {
           console.error('❌ 활동 생성 중 오류', error);
-          console.log('📦 payload 확인:', payload);
           alert('생성 중 오류가 발생했습니다.');
         },
       });
     } else if (id) {
-      console.log(`🔄 활동 ID ${id} 업데이트 시작...`);
       updateActivity(
         { id: id!, data: payload },
         {
@@ -262,15 +257,7 @@ const ArchiveDetailPage: React.FC = () => {
           },
           onError: (error: any) => {
             console.error('❌ 저장 중 오류', error);
-            console.error('❌ 에러 상세:', {
-              message: error?.message,
-              response: error?.response?.data,
-              status: error?.response?.status,
-              statusText: error?.response?.statusText,
-            });
-            alert(
-              `저장 중 오류가 발생했습니다.\n상태: ${error?.response?.status}\n메시지: ${error?.response?.data?.message || error?.message}`
-            );
+            alert('저장 중 오류가 발생했습니다.');
           },
         }
       );
@@ -279,29 +266,24 @@ const ArchiveDetailPage: React.FC = () => {
 
   return (
     <div className="flex gap-16 px-12 py-5 bg-[#F8F9FA]">
-      {/* 좌측 사이드바 */}
       <div className="flex flex-col gap-4">
         <UndoButton onClick={() => navigate('/archive')} />
         <SideBar title="목차" items={events ?? []} />
       </div>
 
-      {/* 우측 본문 */}
       <div className="flex-1 flex flex-col gap-10 h-screen overflow-y-auto">
-        {/* 로딩 상태 */}
         {isLoading && (
           <div className="flex items-center justify-center h-64">
             <p className="text-lg text-gray-500">로딩 중입니다...</p>
           </div>
         )}
 
-        {/* 에러 상태 */}
         {error && (
           <div className="flex items-center justify-center h-64">
             <p className="text-lg text-red-500">에러가 발생했습니다: {(error as Error).message}</p>
           </div>
         )}
 
-        {/* 정상 데이터 표시 */}
         {!isLoading && !error && (
           <>
             {/* 제목 및 활동 기본 정보 */}
@@ -321,6 +303,7 @@ const ArchiveDetailPage: React.FC = () => {
               </button>
             </div>
 
+            {/* 활동 정보 */}
             <div className="flex flex-col gap-4 text-[13pt] text-[#00193E]">
               <div className="flex items-center gap-4">
                 <p className="w-[150px] text-[#9B9DA1] font-semibold">카테고리</p>
@@ -332,15 +315,14 @@ const ArchiveDetailPage: React.FC = () => {
                   <option key="default" value="" disabled className="text-[#9B9DA1]">
                     선택하세요
                   </option>
-                  {categories.map((cat) => {
-                    return (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    );
-                  })}
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
                 </select>
               </div>
+
               <div className="flex items-center gap-4">
                 <p className="w-[150px] text-[#9B9DA1] font-semibold">활동 기간</p>
                 <input
@@ -357,6 +339,7 @@ const ArchiveDetailPage: React.FC = () => {
                   onChange={(e) => setEndDate(e.target.value)}
                 />
               </div>
+
               <div className="flex items-center gap-4">
                 <p className="w-[150px] text-[#9B9DA1] font-semibold">역할</p>
                 <input
@@ -366,6 +349,7 @@ const ArchiveDetailPage: React.FC = () => {
                   value={role ?? ''}
                 />
               </div>
+
               <div className="flex items-center gap-4">
                 <p className="w-[150px] text-[#9B9DA1] font-semibold">활동 설명</p>
                 <input
@@ -375,6 +359,7 @@ const ArchiveDetailPage: React.FC = () => {
                   value={description ?? ''}
                 />
               </div>
+
               <div className="flex items-center gap-4">
                 <p className="w-[150px] text-[#9B9DA1] font-semibold">활동 키워드</p>
                 <KeywordInput
@@ -394,7 +379,6 @@ const ArchiveDetailPage: React.FC = () => {
             />
 
             <div className="flex flex-col gap-16">
-              {/* 새로 생성된 이벤트가 있으면 맨 위에 표시 */}
               {newEventId && (
                 <EventCard
                   tempId={newEventId}
@@ -405,7 +389,6 @@ const ArchiveDetailPage: React.FC = () => {
                 />
               )}
 
-              {/* 기존 이벤트 목록 */}
               {events && events.length > 0 ? (
                 events.map((event: Event) => (
                   <EventCard
@@ -413,13 +396,11 @@ const ArchiveDetailPage: React.FC = () => {
                     onSelect={handleSelect}
                     isSelected={selectedId === event.id}
                     event={event}
+                    onSave={(data: Partial<Event>) => handleUpdateEvent(event.id, data)}
                   />
                 ))
               ) : (
-                <>
-                  <span>이벤트 목록이 없습니다.</span>
-                  {/* <ActivityRecordCard onSelect={handleSelect} /> */}
-                </>
+                <span>이벤트 목록이 없습니다.</span>
               )}
             </div>
           </>
