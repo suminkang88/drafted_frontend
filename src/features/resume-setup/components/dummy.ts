@@ -6,7 +6,7 @@ export const activities = [
     description:
       '서비스기획 강의를 수강하고 산출물을 도출한 경험은 웹서비스 개발 및 해커톤을 진행하는 멋쟁이사자처럼에 대한 관심과 열정을 보여주기 좋아요 :)',
     isRecommended: true,
-    isSelected: true,
+    isSelected: false,
   },
   {
     id: 2,

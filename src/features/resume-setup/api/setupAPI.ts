@@ -47,8 +47,17 @@ export const useSetupApi = () => {
   };
 
   // 지원서 조회 API (GET /applications/{id}/)
-  const fetchApplication = (applicationId: string | number) =>
-    authRequest(getToken, 'get', `/applications/${applicationId}/`);
+  const fetchApplication = async (applicationId: string | number) => {
+    console.log('fetchApplication 호출됨 - ID:', applicationId);
+    try {
+      const result = await authRequest(getToken, 'get', `/applications/${applicationId}/`);
+      console.log('✅ fetchApplication 성공:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ fetchApplication 실패:', error);
+      throw error;
+    }
+  };
 
   // 지원서 수정 API (PUT /applications/{id}/)
   const updateApplication = (applicationId: string | number, data: Partial<ApplicationCreate>) =>
@@ -58,14 +67,10 @@ export const useSetupApi = () => {
   const deleteApplication = (applicationId: string | number) =>
     authRequest(getToken, 'delete', `/applications/${applicationId}/`);
 
-  // 지원서 목록 조회 API (GET /applications/)
-  const fetchApplications = () => authRequest(getToken, 'get', '/applications/');
-
   return {
     createApplication,
     fetchApplication,
     updateApplication,
     deleteApplication,
-    fetchApplications,
   };
 };

@@ -9,7 +9,7 @@ import MainPage from '@/pages/MainPage';
 import Header from '@/shared/layout/Header';
 import ResumeEditPage from '@/features/resume-editor/ResumeEditPage';
 import ResumeHistoryPage from '@/features/resume-history/ResumeHistoryPage';
-import ApplicationForm from '@/features/resume-history/ResumeViewPage';
+import ResumeViewPage from '@/features/resume-history/ResumeViewPage';
 import ArchiveMainPage from '@/features/archive/ArchiveMainPage';
 import ArchiveDetailPage from '@/features/archive/ArchiveDetailPage';
 import AdditionalInfoPage from '@/features/auth/AdditionalInfoPage';
@@ -82,7 +82,7 @@ const AppRouter = () => {
             }
           />
           <Route
-            path="/resume/activity-recommend"
+            path="/resume/:id/activity-recommend"
             element={
               <SignedIn>
                 <ActivityRecommendPage />
@@ -103,7 +103,7 @@ const AppRouter = () => {
           {/* 기타 로그인 상태에서 보여줄 경로들 */}
           {/* <Route path="/testpage" element={<TestPage />} /> */}
           <Route
-            path="/resume/editor"
+            path="/resume/:id/editor"
             element={
               <SignedIn>
                 <ResumeEditPage />
@@ -122,7 +122,7 @@ const AppRouter = () => {
             path="/resume/:id"
             element={
               <SignedIn>
-                <ApplicationForm />
+                <ResumeViewPage />
               </SignedIn>
             }
           />
