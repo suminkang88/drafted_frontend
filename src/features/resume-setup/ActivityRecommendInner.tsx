@@ -12,14 +12,7 @@ import { useState } from 'react';
 import { useQuestionsContext } from './QuestionsContext';
 import { useRecommendApi } from './hooks/useRecommend';
 import { useNavigate, useParams } from 'react-router-dom';
-
-// 필요한 데이터만 추출한 타입 정의
-export interface Question {
-  questionId: number;
-  questionOrder: string;
-  content: string;
-  limit: number;
-}
+import { Question } from '@/app/types';
 
 const ActivityRecommendationInner = ({ questions }: { questions: Question[] }) => {
   const navigate = useNavigate();
