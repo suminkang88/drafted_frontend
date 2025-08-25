@@ -9,7 +9,7 @@ import MainPage from '@/pages/MainPage';
 import Header from '@/shared/layout/Header';
 import ResumeEditPage from '@/features/resume-editor/ResumeEditPage';
 import ResumeHistoryPage from '@/features/resume-history/ResumeHistoryPage';
-import ApplicationForm from '@/features/resume-history/ResumeViewPage';
+import ResumeViewPage from '@/features/resume-history/ResumeViewPage';
 import ArchiveMainPage from '@/features/archive/ArchiveMainPage';
 import ArchiveDetailPage from '@/features/archive/ArchiveDetailPage';
 import AdditionalInfoPage from '@/features/auth/AdditionalInfoPage';
@@ -122,7 +122,7 @@ const AppRouter = () => {
             path="/resume/:id"
             element={
               <SignedIn>
-                <ApplicationForm />
+                <ResumeViewPage />
               </SignedIn>
             }
           />

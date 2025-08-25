@@ -22,6 +22,7 @@ import type {
   SendChatMessageResponse,
   ChatMessage,
 } from '@/features/resume-editor/types/editor';
+import { authRequest } from '@/axios/authRequest';
 
 // ===================== Editor Guideline =====================
 export const editorKeys = {
@@ -47,6 +48,16 @@ export function useEditorGuideline(questionId?: number | string, options?: Opts)
     ...options,
   });
 }
+
+// ===================== Selected Events =====================
+export const useSuggestion = (questionId: number | string) => {
+  const { getToken } = useAuth();
+  return useQuery({
+    queryKey: ['suggestion'],
+    queryFn: async () =>
+      await authRequest(getToken, 'get', `/ai/questions/suggestions/${questionId}`),
+  });
+};
 
 // ===================== Chat Keys =====================
 export const chatKeys = {
