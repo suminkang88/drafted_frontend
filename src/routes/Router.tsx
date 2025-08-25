@@ -25,7 +25,7 @@ const AppRouter = () => {
       <Header />
 
       {/* 페이지 내용 */}
-      <main className="px-6 py-8">
+      <main>
         <Routes>
           {/* 루트 경로 - 로그인 상태에 따라 다르게 처리 */}
           <Route
