@@ -1,5 +1,5 @@
 // src/features/resume-editor/ResumeEditPage.tsx
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   AIResponseCard,
   AutoSaved,
@@ -20,13 +20,7 @@ import {
   useCreateChatSession,
   useChatMessages,
   useSendChatMessage,
-  useSuggestion,
 } from '@/features/resume-editor/hooks/useEditor';
-import { useSetupApi } from '../resume-setup/api/setupAPI';
-import { useParams } from 'react-router-dom';
-import { Question } from '@/app/types';
-
-//////////여기부터
 
 interface ActivityDetailSection {
   title: string;
@@ -41,68 +35,16 @@ const dummySections: ActivityDetailSection[] = [
   },
   { title: '결과 및 성과', content: '긍정적인 피드백, PM 직무에 대한 이해도 제고...' },
 ];
-/////////여기까지 주석
 
 const ResumeEditPage = () => {
-  const { id: resumeId } = useParams<{ id: string }>();
-  const { fetchApplication } = useSetupApi();
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [isLoading, setIsLoading] = useState(true); // 지원서 문항 로딩 상태 관리
-  const [error, setError] = useState<string | null>(null);
+  const [text, setText] = useState('');
+  const { status, lastSaved } = useDebounceSave(text, 1000);
 
-  // 지원서 문항 가져오기
-  useEffect(() => {
-    const loadApplicationQuestions = async () => {
-      if (!resumeId) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const result = await fetchApplication(resumeId);
-        setQuestions(result);
-      } catch (err) {
-        console.error('지원서 문항 로딩 실패:', err);
-        setError('지원서 문항을 불러오는데 실패했습니다.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadApplicationQuestions();
-  }, [resumeId]);
-
-  const [texts, setTexts] = useState<{ [key: number]: string }>({});
-  const [selectedQuestionTab, setSelectedQuestionTab] = useState<number>(0);
   const [dragText, setDragText] = useState('');
   const [chatText, setChatText] = useState('');
   const [sessionId, setSessionId] = useState<number | string | null>(null);
 
-  // 선택된 질문의 questionId 찾기
-  const selectedQuestion = questions.find(
-    (q) => parseInt(q.questionOrder) === selectedQuestionTab + 1
-  );
-  const selectedQuestionId = selectedQuestion?.questionId || 0;
-
-  const {
-    data: selectedSuggestions,
-    isLoading: isLoadingSuggestions,
-    isFetching: isFetchingSuggestions,
-    refetch: refetchSuggestions,
-  } = useSuggestion(selectedQuestionId > 0 ? selectedQuestionId : 0);
-  const suggested = selectedSuggestions?.suggestions?.[0];
-
-  // selectedQuestionId가 바뀔 때마다 useSuggestion API 재요청
-  useEffect(() => {
-    if (selectedQuestionId > 0) {
-      refetchSuggestions();
-    }
-  }, [selectedQuestionId, refetchSuggestions]);
-
-  const questionId = selectedQuestionId;
+  const questionId = 4;
 
   const createSession = useCreateChatSession();
   const msgsQuery = useChatMessages(sessionId ?? undefined);
@@ -132,7 +74,8 @@ const ResumeEditPage = () => {
       });
       console.log(created.session_id);
 
-      sid = created?.session_id; // ?? created?.data?.session_id;
+      // created가 { data: {...} } 인 경우 처리
+      sid = created?.session_id ?? created?.data?.session_id;
 
       if (!sid) {
         console.error('세션 생성 응답에 session_id가 없습니다.', created);
@@ -150,7 +93,7 @@ const ResumeEditPage = () => {
       sessionId: sid!,
       payload: {
         message: combinedMessage,
-        personal_statement: texts[selectedQuestionId] || '',
+        personal_statement: text,
         question_id: Number(questionId),
       },
     });
@@ -159,71 +102,34 @@ const ResumeEditPage = () => {
     setChatText('');
   };
 
-  const handleQuestionTabClick = (tabNumber: number) => {
-    setSelectedQuestionTab(tabNumber);
-  };
-
   return (
     <div className="flex w-full min-h-screen bg-gray-50">
       {/* 좌측 */}
       <div className="w-[1200px] p-6 bg-white border-r border-gray-200">
-        {isLoading ? (
-          <div className="flex justify-center items-center text-center font-noto font-semibold h-screen">
-            지원서를 불러오는 중입니다...
-          </div>
-        ) : (
-          <>
-            <div className="flex justify-between items-end w-full">
-              <ApplicationTitle targetName={'멋쟁이 사자처럼 13기'} />
-            </div>
+        <div className="flex justify-between items-end w-full">
+          <ApplicationTitle targetName={'멋쟁이 사자처럼 13기'} />
+          <AutoSaved status={status} lastSaved={lastSaved} />
+        </div>
 
-            <QuestionSelectButton
-              className="flex justify-end bg-white"
-              questionNumbers={questions.length}
-              extraLabel="전체 보기"
-              selectedTab={selectedQuestionTab}
-              onClick={handleQuestionTabClick}
-            />
+        <QuestionSelectButton
+          className="flex justify-end"
+          questionNumbers={4}
+          extraLabel="전체 보기"
+        />
 
-            <div className="mb-4">
-              {questions.map((question) => {
-                const isSelected = parseInt(question.questionOrder) === selectedQuestionTab + 1;
+        <div className="mb-4">
+          <QuestionShowCard question="멋쟁이사자처럼 13기에 지원한 동기를 적어주세요" />
+        </div>
 
-                if (isSelected) {
-                  return (
-                    <div key={question.questionId} className="flex flex-col gap-4 mb-4">
-                      <QuestionShowCard
-                        question={question.content}
-                        maximumTextLength={question.limit}
-                      />
-                      {isLoadingSuggestions || isFetchingSuggestions ? (
-                        <div className="flex justify-center items-center h-full">
-                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col gap-4">
-                          <ToggledSelectedActivityCard
-                            event={suggested?.event_name || '이벤트 없음'}
-                            activity={suggested?.activity || '활동 없음'}
-                            sections={dummySections}
-                          />
-                          <ContentInputBox
-                            text={texts[question.questionId] || ''}
-                            limit={question.limit}
-                            setText={(newText) =>
-                              setTexts((prev) => ({ ...prev, [question.questionId]: newText }))
-                            }
-                            onTextDrag={setDragText}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
-              })}
-            </div>
-          </>
-        )}
+        <div className="mb-4">
+          <ToggledSelectedActivityCard
+            event="서비스기획 동아리"
+            activity="프로젝트 기획 및 실행"
+            sections={dummySections}
+          />
+        </div>
+
+        <ContentInputBox text={text} setText={setText} onTextDrag={setDragText} />
       </div>
 
       {/* 우측 */}
