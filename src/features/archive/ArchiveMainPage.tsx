@@ -140,7 +140,13 @@ const ArchiveMainPage: React.FC = () => {
                       title={activity.title}
                       category={activity.category}
                       period={period}
-                      recentEvents={activity.recentEvents}
+                      recentEvents={
+                        Array.isArray(activity.recentEvents)
+                          ? activity.recentEvents.map((event, idx) =>
+                              typeof event === 'string' ? { id: idx, event_name: event } : event
+                            )
+                          : null
+                      }
                       isFavorite={activity.isFavorite}
                       event_count={activity.event_count}
                       isSelected={isSelected}

@@ -147,7 +147,7 @@ const ArchiveDetailPage: React.FC = () => {
       result: eventData.result?.trim(),
       startDate: normalizeDate(eventData.startDate),
       endDate: normalizeDate(eventData.endDate), // ✅ 선택 안 하면 undefined
-    });
+    }) as CreateEventInput;
 
     console.log('📦 새 이벤트 생성 payload:', payload);
 
